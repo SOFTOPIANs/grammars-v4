@@ -42,7 +42,7 @@ public override IToken NextToken()
 
     if (token.Type == PHPEnd || token.Type == PHPEndSingleLineComment)
     {
-        if (_mode == SingleLineCommentMode)
+        if (GetCurrentMode() == SingleLineCommentMode)
         {
             // SingleLineCommentMode for such allowed syntax:
             // <?php echo "Hello world"; // comment ?>
@@ -82,7 +82,7 @@ public override IToken NextToken()
             _phpScript = true;
         }
     }
-    else if (_mode == HereDoc)
+    else if (GetCurrentMode() == HereDoc)
     {
         // Heredoc and Nowdoc syntax support: http://php.net/manual/en/language.types.string.php#language.types.string.syntax.heredoc
         switch (token.Type)
@@ -108,9 +108,9 @@ public override IToken NextToken()
                 break;
         }
     }
-    else if (_mode == PHP)
+    else if (GetCurrentMode() == PHP)
     {
-        if (_channel != Hidden)
+        if (Channel != Hidden)
         {
             _prevTokenType = token.Type;
         }
@@ -126,7 +126,24 @@ bool CheckHeredocEnd(string text)
     string identifier = semi ? text.Substring(0, text.Length - 1) : text;
     var result = string.Equals(identifier, _heredocIdentifier, System.StringComparison.Ordinal);
     return result;
-}}
+}
+
+private int La(int pos)
+{
+#if ANTLR_STANDARD
+    return InputStream.LA(pos);
+#else
+    return La(pos);
+#endif
+}
+
+private int GetCurrentMode() =>
+#if ANTLR_STANDARD
+    base.CurrentMode;
+#else
+    _mode;
+#endif
+}
 
 SeaWhitespace:  [ \t\r\n]+ -> channel(HIDDEN);
 HtmlText:       ~[<#]+;
@@ -139,7 +156,7 @@ HtmlComment:    '<' '!' '--' .*? '-->' -> channel(HIDDEN);
 HtmlDtd:        '<' '!' .*? '>';
 HtmlOpen:       '<' -> pushMode(INSIDE);
 Shebang
-    : { _input.La(-1) <= 0 || _input.La(-1) == '\r' || _input.La(-1) == '\n' }? '#' '!' ~[\r\n]*
+    : { La(-1) <= 0 || La(-1) == '\r' || La(-1) == '\n' }? '#' '!' ~[\r\n]*
     ;
 NumberSign:     '#' ~[<]* -> more;
 Error:          .         -> channel(ErrorLexem);
@@ -422,15 +439,15 @@ BackQuoteString:    '`' ~'`'* '`';
 SingleQuoteString:  '\'' (~('\'' | '\\') | '\\' . )* '\'';
 DoubleQuote:        '"' -> pushMode(InterpolationString);
 
-StartNowDoc:        '<<<' [ \t]* '\'' [a-zA-Z_][a-zA-Z_0-9]* '\''  { _input.La(1) == '\r' || _input.La(1) == '\n' }? -> pushMode(HereDoc);
-StartHereDoc:       '<<<' [ \t]* [a-zA-Z_][a-zA-Z_0-9]* { _input.La(1) == '\r' || _input.La(1) == '\n' }? -> pushMode(HereDoc);
+StartNowDoc:        '<<<' [ \t]* '\'' [a-zA-Z_][a-zA-Z_0-9]* '\''  { La(1) == '\r' || La(1) == '\n' }? -> pushMode(HereDoc);
+StartHereDoc:       '<<<' [ \t]* [a-zA-Z_][a-zA-Z_0-9]* { La(1) == '\r' || La(1) == '\n' }? -> pushMode(HereDoc);
 ErrorPhp:           .          -> channel(ErrorLexem);
 
 mode InterpolationString;
 
 VarNameInInterpolation:     '$' [a-zA-Z_][a-zA-Z_0-9]*                          -> type(VarName); // TODO: fix such cases: "$people->john"
 DollarString:               '$'                                                 -> type(StringPart);
-CurlyDollar:                '{' {_input.La(1) == '$'}? {_insideString = true;}  -> channel(SkipChannel), pushMode(PHP);
+CurlyDollar:                '{' {La(1) == '$'}? {_insideString = true;}  -> channel(SkipChannel), pushMode(PHP);
 CurlyString:                '{'                                                 -> type(StringPart);
 EscapedChar:                '\\' .                                              -> type(StringPart);
 DoubleQuoteInInterpolation: '"'                                                 -> type(DoubleQuote), popMode;

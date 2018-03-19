@@ -1201,7 +1201,7 @@ create_master_key_azure_sql
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-message-type-transact-sql
 alter_message_type
-    : ALTER MESSAGE TYPE message_type_name=id VALIDATION EQUAL (NONE | EMPTY | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=id)
+    : ALTER MESSAGE TYPE message_type_name=id VALIDATION EQUAL (NONE | EMPTY_ | WELL_FORMED_XML | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=id)
     ;
 
 
@@ -1716,7 +1716,7 @@ message_statement
     : CREATE MESSAGE TYPE message_type_name=id
       (AUTHORIZATION owner_name=id)?
       (VALIDATION EQUAL (NONE
-      | EMPTY
+      | EMPTY_
       | WELL_FORMED_XML
       | VALID_XML WITH SCHEMA COLLECTION schema_collection_name=id))
     ;
@@ -3692,7 +3692,7 @@ simple_id
     | DOCUMENT
     | DYNAMIC
     | EMERGENCY
-    | EMPTY
+    | EMPTY_
     | ENABLE
     | ENABLE_BROKER
     | ENCRYPTED_VALUE

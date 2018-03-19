@@ -12,6 +12,13 @@ public abstract class JavaScriptBaseParser : Parser
     {
     }
 
+#if ANTLR_STANDARD
+    public JavaScriptBaseParser(ITokenStream input, System.IO.TextWriter output, System.IO.TextWriter errorOutput)
+        : base(input, output, errorOutput)
+    {
+    }
+#endif
+
     /// <summary>
     /// hort form for prev(String str)
     /// </summary>
@@ -25,7 +32,7 @@ public abstract class JavaScriptBaseParser : Parser
     /// </summary>
     protected bool prev(string str)
     {
-        return _input.Lt(-1).Text.Equals(str);
+        return Lt(-1).Text.Equals(str);
     }
 
     protected bool notLineTerminator()
@@ -35,13 +42,13 @@ public abstract class JavaScriptBaseParser : Parser
 
     protected bool notOpenBraceAndNotFunction()
     {
-        int nextTokenType = _input.Lt(1).Type;
+        int nextTokenType = Lt(1).Type;
         return nextTokenType != OpenBrace && nextTokenType != Function;
     }
 
     protected bool closeBrace()
     {
-        return _input.Lt(1).Type == CloseBrace;
+        return Lt(1).Type == CloseBrace;
     }
 
     /// <summary>Returns true if on the current index of the parser's
@@ -55,7 +62,7 @@ public abstract class JavaScriptBaseParser : Parser
     {
         // Get the token ahead of the current index.
         int possibleIndexEosToken = CurrentToken.TokenIndex - 1;
-        IToken ahead = _input.Get(possibleIndexEosToken);
+        IToken ahead = GetToken(possibleIndexEosToken);
 
         // Check if the token resides on the Hidden channel and if it's of the
         // provided type.
@@ -72,7 +79,7 @@ public abstract class JavaScriptBaseParser : Parser
     {
         // Get the token ahead of the current index.
         int possibleIndexEosToken = CurrentToken.TokenIndex - 1;
-        IToken ahead = _input.Get(possibleIndexEosToken);
+        IToken ahead = GetToken(possibleIndexEosToken);
 
         if (ahead.Channel != Lexer.Hidden)
         {
@@ -90,7 +97,7 @@ public abstract class JavaScriptBaseParser : Parser
         {
             // Get the token ahead of the current whitespaces.
             possibleIndexEosToken = CurrentToken.TokenIndex - 2;
-            ahead = _input.Get(possibleIndexEosToken);
+            ahead = GetToken(possibleIndexEosToken);
         }
 
         // Get the token's text and type.
@@ -100,5 +107,23 @@ public abstract class JavaScriptBaseParser : Parser
         // Check if the token is, or contains a line terminator.
         return (type == MultiLineComment && (text.Contains("\r") || text.Contains("\n"))) ||
                 (type == LineTerminator);
+    }
+
+    private IToken Lt(int pos)
+    {
+#if ANTLR_STANDARD
+        return TokenStream.LT(pos);
+#else
+        return _input.Lt(pos);
+#endif
+    }
+
+    private IToken GetToken(int pos)
+    {
+#if ANTLR_STANDARD
+        return TokenStream.Get(pos);
+#else
+        return _input.Get(pos);
+#endif
     }
 }

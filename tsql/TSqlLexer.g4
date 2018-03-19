@@ -515,7 +515,7 @@ DOCUMENT:                              'DOCUMENT';
 DYNAMIC:                               'DYNAMIC';
 ELEMENTS:                              'ELEMENTS';
 EMERGENCY:                             'EMERGENCY';
-EMPTY:                                 'EMPTY';
+EMPTY_:                                'EMPTY';
 ENABLE:                                'ENABLE';
 ENABLE_BROKER:                         'ENABLE_BROKER';
 ENCRYPTED_VALUE:                       'ENCRYPTED_VALUE';
