@@ -86,7 +86,7 @@ emptyStatement
     ;
 
 expressionStatement
-    : {notOpenBraceAndNotFunction()}? expressionSequence eos
+    : /*{notOpenBraceAndNotFunction()}?*/ expressionSequence eos
     ;
 
 ifStatement
@@ -254,8 +254,8 @@ propertyName
 
 arguments
     : '('(
-          singleExpression (',' singleExpression)* (',' lastArgument)? |
-          lastArgument
+          singleExpression (',' singleExpression)* /*(',' lastArgument)? |
+          lastArgument */
        )?')'
     ;
 
@@ -270,27 +270,14 @@ expressionSequence
 singleExpression
     : Function Identifier? '(' formalParameterList? ')' '{' functionBody '}' # FunctionExpression
     | Class Identifier? classTail                                            # ClassExpression
-    | singleExpression '[' expressionSequence ']'                            # MemberIndexExpression
-    | singleExpression '.' identifierName                                    # MemberDotExpression
-    | singleExpression arguments                                             # ArgumentsExpression
+    | singleExpression (Dot identifierName | '[' expressionSequence ']' | arguments)     # MemberIndexDotArgumentsExpression
     | New singleExpression arguments?                                        # NewExpression
-    | singleExpression {notLineTerminator()}? '++'                           # PostIncrementExpression
-    | singleExpression {notLineTerminator()}? '--'                           # PostDecreaseExpression
-    | Delete singleExpression                                                # DeleteExpression
-    | Void singleExpression                                                  # VoidExpression
-    | Typeof singleExpression                                                # TypeofExpression
-    | '++' singleExpression                                                  # PreIncrementExpression
-    | '--' singleExpression                                                  # PreDecreaseExpression
-    | '+' singleExpression                                                   # UnaryPlusExpression
-    | '-' singleExpression                                                   # UnaryMinusExpression
-    | '~' singleExpression                                                   # BitNotExpression
-    | '!' singleExpression                                                   # NotExpression
+    | singleExpression {notLineTerminator()}? ('++' | '--')                  # PostcrementExpression
+    | ('!' | '~' | '+' | '-' | '++' | '--' | Typeof | Void | Delete) singleExpression  # UnaryOperatorExpression
     | singleExpression ('*' | '/' | '%') singleExpression                    # MultiplicativeExpression
     | singleExpression ('+' | '-') singleExpression                          # AdditiveExpression
     | singleExpression ('<<' | '>>' | '>>>') singleExpression                # BitShiftExpression
-    | singleExpression ('<' | '>' | '<=' | '>=') singleExpression            # RelationalExpression
-    | singleExpression Instanceof singleExpression                           # InstanceofExpression
-    | singleExpression In singleExpression                                   # InExpression
+    | singleExpression ('<' | '>' | '<=' | '>='| In | Instanceof) singleExpression    # RelationalExpression
     | singleExpression ('==' | '!=' | '===' | '!==') singleExpression        # EqualityExpression
     | singleExpression '&' singleExpression                                  # BitAndExpression
     | singleExpression '^' singleExpression                                  # BitXOrExpression
@@ -298,8 +285,7 @@ singleExpression
     | singleExpression '&&' singleExpression                                 # LogicalAndExpression
     | singleExpression '||' singleExpression                                 # LogicalOrExpression
     | singleExpression '?' singleExpression ':' singleExpression             # TernaryExpression
-    | singleExpression '=' singleExpression                                  # AssignmentExpression
-    | singleExpression assignmentOperator singleExpression                   # AssignmentOperatorExpression
+    | singleExpression ('=' | assignmentOperator) singleExpression           # AssignmentExpression
     | singleExpression TemplateStringLiteral                                 # TemplateStringExpression  // ECMAScript 6
     | This                                                                   # ThisExpression
     | Identifier                                                             # IdentifierExpression
