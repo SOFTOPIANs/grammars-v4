@@ -2,12 +2,12 @@
  * [The "BSD license"]
  Copyright (c) 2014 Terence Parr
  All rights reserved.
-
+ 
  Redistribution and use in source and
  * binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
-
+ 
  1.
  * Redistributions of source code must retain the above copyright
  notice, this list of conditions and the following
@@ -20,7 +20,7 @@
  * name of the author may not be used to endorse or promote products
  derived from this software without specific prior
  * written permission.
-
+ 
  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,7 +36,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
-
+ 
  Converted from Apple's doc, http://tinyurl.com/n8rkoue, to
  * ANTLR's
  meta-language.
@@ -112,6 +112,9 @@ ELSEIF_DIRECTIVE	:	'#elseif';
 ELSE_DIRECTIVE		:	'#else';
 ENDIF_DIRECTIVE		:	'#endif';
 
+TRUE	:	'true';
+FALSE	:	'false';
+
 // Punctuation
 
 DOT			:	'.';
@@ -153,17 +156,38 @@ IDENTIFIER_TOKEN:
 	| '$' PURE_DECIMAL_DIGIT+
 	;
 
+BOOL_LIT : TRUE | FALSE;
+
 // Number literals
 BINARY_LIT	:	'0b' PURE_BINARY_DIGIT BINARY_DIGIT*;
 DECIMAL_LIT	:	'0'? PURE_DECIMAL_DIGIT DECIMAL_DIGIT*;
 OCTAL_LIT	:	'0o' PURE_OCTAL_DIGIT OCTAL_DIGIT*;
 HEX_LIT		:	'0x' PURE_HEX_DIGIT HEX_DIGIT*;
 
+FLOAT_LIT:
+	DECIMAL_LIT DECIMAL_FRACTION? DECIMAL_EXPONENT?
+	| HEX_LIT HEX_FRACTION? HEX_EXPONENT
+	;
+
 NIL_LIT : 'nil';
 
 RAW_STRING_LIT : '"' ESCAPED_VALUE* '"';
 
 // Fragments
+
+fragment DECIMAL_EXPONENT : FLOATING_POINT_E SIGN? DECIMAL_LIT;
+
+fragment DECIMAL_FRACTION : DOT DECIMAL_LIT;
+
+fragment HEX_EXPONENT : FLOATING_POINT_P SIGN? DECIMAL_LIT;
+
+fragment HEX_FRACTION : '.' PURE_HEX_DIGIT HEX_DIGIT*;
+
+fragment SIGN : ADD | SUB;
+
+fragment FLOATING_POINT_E : 'e' | 'E';
+
+fragment FLOATING_POINT_P : 'p' | 'P';
 
 fragment ESCAPED_VALUE:
 	'\\' [0\\tnr"']
@@ -180,7 +204,7 @@ fragment PURE_DECIMAL_DIGIT	:	[0-9];
 fragment DECIMAL_DIGIT		:	[0-9] | '_';
 
 fragment PURE_HEX_DIGIT	:	[0-9a-fA-F];
-fragment HEX_DIGIT		:	PURE_HEX_DIGIT | '-';
+fragment HEX_DIGIT		:	PURE_HEX_DIGIT | '_';
 
 fragment PURE_OCTAL_DIGIT	:	[0-7];
 fragment OCTAL_DIGIT		:	PURE_OCTAL_DIGIT | '_';

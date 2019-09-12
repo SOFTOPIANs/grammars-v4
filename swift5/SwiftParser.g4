@@ -46,7 +46,67 @@ parser grammar SwiftParser;
 
 options {
 	tokenVocab = SwiftLexer;
+	superClass = SwiftBaseParser;
 }
+
+top_level : statements? EOF;
+
+statements : statement+;
+
+code_block : '{' statements? '}';
+
+// Statements
+statement: //: expression ';'?
+	declaration ';'?
+	/*| loop_statement ';'?
+ | branch_statement ';'?
+ | labeled_statement ';'?
+ | control_transfer_statement ';'?
+ |
+	 defer_statement ';'?
+ | do_statement ';'?
+ | compiler_control_statement ';'? // proper logic with semicolons is
+	 not
+ supported yet. compiler_control_statement should be separated with a newline, but not with a semicolon
+	 */
+	;
+
+// Declarations
+declaration : variable_declaration;
+
+variable_declaration : VAR identifier ASSIGN literal;
+
+// Expressions
+expression_list : expression (',' expression)*;
+
+expression : try_operator?; //prefix_expression binary_expressions?;
+
+/*
+ type:
+ array_type # the_array_type
+ | dictionary_type # the_dictionary_type
+ | function_type # the_function_type
+ |
+ type_identifier # the_type_identifier
+ | tuple_type # the_tuple_type
+ | type '?' # the_optional_type
+ | type '!' #
+ the_implicitly_unwrapped_optional_type
+ | protocol_composition_type # the_protocol_composition_type
+ | type '.' 'Type'
+ # the_metatype_type_type
+ | type '.' 'Protocol' # the_metatype_protocol_type
+ | 'Any' # the_any_type
+ | 'Self' #
+ the_self_type
+ ;
+ */
+
+// Operators
+
+try_operator : TRY (QUESTION | BANG)?;
+
+// Identifiers and Literals
 
 identifier : IDENTIFIER_TOKEN | BREAK;
 
@@ -54,8 +114,11 @@ identifier_list : identifier (DOT identifier)*;
 
 integer : BINARY_LIT | DECIMAL_LIT | OCTAL_LIT | HEX_LIT;
 
-sourceFile : varDecl; //identifier_list*;
+literal : BOOL_LIT | numeric_literal | NIL_LIT | string;
 
+// TODO : Fix predicate for correct processing for negative numbers
+numeric_literal : SUB? (integer | FLOAT_LIT);
+
+// TODO: Add multiline string support
 string : RAW_STRING_LIT;
 
-varDecl : VAR identifier ASSIGN string;
