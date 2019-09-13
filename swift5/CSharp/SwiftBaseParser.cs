@@ -352,7 +352,7 @@ public abstract class SwiftBaseParser : Parser {
         return rightWS.Get(t.Type) || t.Type == SwiftParser.Eof;
     }
 
-    public static bool isSeparatedStatement(ITokenStream tokens, int indexOfPreviousStatement) {
+/*    public static bool isSeparatedStatement(ITokenStream tokens, int indexOfPreviousStatement) {
         //System.out.println("------");
         //System.out.println("indexOfPreviousStatement: " + indexOfPreviousStatement);
 
@@ -380,4 +380,50 @@ public abstract class SwiftBaseParser : Parser {
 
         return true;
     }
+    */
+/*
+    public bool isSeparatedStatement(ITokenStream tokens, int indexOfPreviousStatement) {
+        // Get the token ahead of the current index.
+        int possibleIndexEosToken = CurrentToken.TokenIndex - 1;
+
+        if (possibleIndexEosToken == -1)
+        {
+            return true;
+        }
+
+        IToken ahead = _input.Get(possibleIndexEosToken);
+        if (ahead.Channel != Lexer.Hidden)
+        {
+            // We're only interested in tokens on the HIDDEN channel.
+            return false;
+        }
+
+        if (ahead.Type == TERMINATOR2)
+        {
+            // There is definitely a line terminator ahead.
+            return true;
+        }
+
+        if (ahead.Type == WS2)
+        {
+            // Get the token ahead of the current whitespaces.
+            possibleIndexEosToken = CurrentToken.TokenIndex - 2;
+
+            if (possibleIndexEosToken == -1)
+            {
+                return true;
+            }
+
+            ahead = _input.Get(possibleIndexEosToken);
+        }
+
+        // Get the token's text and type.
+        String text = ahead.Text;
+        int type = ahead.Type;
+
+        // Check if the token is, or contains a line terminator.
+        return type == COMMENT2 && (text.Contains("\r") || text.Contains("\n")) ||
+               type == TERMINATOR2;
+    }
+    */
 }

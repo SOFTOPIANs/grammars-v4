@@ -44,6 +44,68 @@
 
 lexer grammar SwiftLexer;
 
+// Tested all alphanumeric tokens in playground.
+// E.g. "let mutating = 1".
+// E.g. "func mutating() {}".
+//
+// In source code of swift there are multiple cases of error diag::keyword_cant_be_identifier.
+// Maybe it is not even a single error when keyword can't be identifier.
+//
+
+// Keywords in declarations/labels
+PROTOCOL_CAPITAL			:	'Protocol';
+ALPHA						:	'alpha';
+ARCH						:	'arch';
+ARM							:	'arm';
+ARM64						:	'arm64';
+ASSIGNMENT					:	'assignment';
+ASSOCIATIVITY				:	'associativity';
+BLUE						:	'blue';
+CONVENIENCE					:	'convenience';
+DIDSET						:	'didSet';
+DYNAMIC						:	'dynamic';
+FILE						:	'file';
+FINAL						:	'final';
+GET							:	'get';
+GREEN						:	'green';
+HIGHERTHAN					:	'higherThan';
+I386						:	'i386';
+IOS							:	'iOS';
+IOSAPPLICATIONEXTENSION		:	'iOSApplicationExtension';
+INDIRECT					:	'indirect';
+INFIX						:	'infix';
+LAZY						:	'lazy';
+LEFT						:	'left';
+LINE						:	'line';
+LOWERTHAN					:	'lowerThan';
+MACOS						:	'macOS';
+MACOSAPPLICATIONEXTENSION	:	'macOSApplicationExtension';
+MUTATING					:	'mutating';
+NONE						:	'none';
+NONMUTATING					:	'nonmutating';
+OF							:	'of';
+OPTIONAL					:	'optional';
+OS							:	'os';
+OVERRIDE					:	'override';
+POSTFIX						:	'postfix';
+PRECEDENCE					:	'precedence';
+PREFIX						:	'prefix';
+RED							:	'red';
+REQUIRED					:	'required';
+RESOURCENAME				:	'resourceName';
+RIGHT						:	'right';
+SAFE						:	'safe';
+SET							:	'set';
+SWIFT						:	'swift';
+TVOS						:	'tvOS';
+UNOWNED						:	'unowned';
+UNSAFE						:	'unsafe';
+WATCHOS						:	'watchOS';
+WEAK						:	'weak';
+WILLSET						:	'willSet';
+X86_64						:	'x86_64';
+PRECEDENCEGROUP				:	'precedencegroup';
+
 // Declarations and Type Keywords
 
 ASSOCIATED_TYPE	:	'associatedtype';
@@ -107,10 +169,22 @@ TYPE_LOWER		:	'type';
 
 // Directives Keywords
 
-IF_DIRECTIVE		:	'#if';
-ELSEIF_DIRECTIVE	:	'#elseif';
-ELSE_DIRECTIVE		:	'#else';
-ENDIF_DIRECTIVE		:	'#endif';
+AVAILABLE_DIRECTIVE			:	'#available';
+COLUMN_DIRECTIVE			:	'#column';
+COLOR_DIRECTIVE				:	'#colorLiteral';
+DSOHANDLE_DIRECTIVE			:	'#dsohandle';
+ELSEIF_DIRECTIVE			:	'#elseif';
+ELSE_DIRECTIVE				:	'#else';
+ENDIF_DIRECTIVE				:	'#endif';
+FILELITERAL_DIRECTIVE		:	'#fileLiteral';
+IMAGE_DIRECTIVE				:	'#imageLiteral';
+IF_DIRECTIVE				:	'#if';
+FILE_DIRECTIVE				:	'#file';
+FUNCTION_DIRECTIVE			:	'#function';
+LINE_DIRECTIVE				:	'#line';
+KEYPATH_DIRECTIVE			:	'#keyPath';
+SELECTOR_DIRECTIVE			:	'#selector';
+SOURCE_LOCATION_DIRECTIVE	:	'#sourceLocation';
 
 TRUE	:	'true';
 FALSE	:	'false';
@@ -144,6 +218,16 @@ MOD			:	'%';
 CARET		:	'^';
 TILDE		:	'~';
 
+BACKTICK	:	'`';
+SHARP		:	'#';
+
+// Attributes
+GETTER_ATTR	:	'getter:';
+SETTER_ATTR	:	'setter:';
+
+UNOWNED_SAFE	:	'unowned(safe)';
+UNOWNED_UNSAFE	:	'unowned(unsafe)';
+
 // Hidden tokens
 
 COMMENT			:	'/*' (COMMENT | .)*? '*/'		-> channel(HIDDEN);
@@ -159,10 +243,11 @@ IDENTIFIER_TOKEN:
 BOOL_LIT : TRUE | FALSE;
 
 // Number literals
-BINARY_LIT	:	'0b' PURE_BINARY_DIGIT BINARY_DIGIT*;
-DECIMAL_LIT	:	'0'? PURE_DECIMAL_DIGIT DECIMAL_DIGIT*;
-OCTAL_LIT	:	'0o' PURE_OCTAL_DIGIT OCTAL_DIGIT*;
-HEX_LIT		:	'0x' PURE_HEX_DIGIT HEX_DIGIT*;
+BINARY_LIT			:	'0b' PURE_BINARY_DIGIT BINARY_DIGIT*;
+DECIMAL_LIT			:	'0'? PURE_DECIMAL_DIGIT DECIMAL_DIGIT*;
+OCTAL_LIT			:	'0o' PURE_OCTAL_DIGIT OCTAL_DIGIT*;
+HEX_LIT				:	'0x' PURE_HEX_DIGIT HEX_DIGIT*;
+PURE_DECIMAL_DIGITS	:	PURE_DECIMAL_DIGIT+;
 
 FLOAT_LIT:
 	DECIMAL_LIT DECIMAL_FRACTION? DECIMAL_EXPONENT?
@@ -171,9 +256,63 @@ FLOAT_LIT:
 
 NIL_LIT : 'nil';
 
-RAW_STRING_LIT : '"' ESCAPED_VALUE* '"';
+//RAW_STRING_LIT :  '"' ESCAPED_VALUE* '"';
+
+Interpolated_string_literal : '"' Interpolated_text_item* '"';
+
+Static_string_literal : '"' ESCAPED_VALUE* '"';
+
+Platform_name_platform_version : Platform_name WS Platform_version;
+
+Operator_head_other: // valid operator chars not used by Swift itself
+	[\u00A1-\u00A7]
+	| [\u00A9\u00AB]
+	| [\u00AC\u00AE]
+	| [\u00B0-\u00B1\u00B6\u00BB\u00BF\u00D7\u00F7]
+	| [\u2016-\u2017\u2020-\u2027]
+	| [\u2030-\u203E]
+	| [\u2041-\u2053]
+	| [\u2055-\u205E]
+	| [\u2190-\u23FF]
+	| [\u2500-\u2775]
+	| [\u2794-\u2BFF]
+	| [\u2E00-\u2E7F]
+	| [\u3001-\u3003]
+	| [\u3008-\u3030]
+	;
+
+Operator_following_character:
+	[\u0300-\u036F]
+	| [\u1DC0-\u1DFF]
+	| [\u20D0-\u20FF]
+	| [\uFE00-\uFE0F]
+	| [\uFE20-\uFE2F]
+	//| [\uE0100-\uE01EF]  ANTLR can't do >16bit char
+	;
+
+Implicit_parameter_name : '$' DECIMAL_LIT;
 
 // Fragments
+
+fragment Interpolated_text_item:
+	'\\(' (Interpolated_string_literal | Interpolated_text_item)+ ')' // nested strings allowed
+	| ESCAPED_VALUE
+	;
+
+fragment Platform_name:
+	'iOS'
+	| 'iOSApplicationExtension'
+	| 'macOS'
+	| 'macOSApplicationExtension'
+	| 'watchOS'
+	| 'tvOS'
+	;
+
+fragment Platform_version:
+	PURE_DECIMAL_DIGITS
+	| PURE_DECIMAL_DIGITS '.' PURE_DECIMAL_DIGITS
+	| PURE_DECIMAL_DIGITS '.' PURE_DECIMAL_DIGITS '.' PURE_DECIMAL_DIGITS
+	;
 
 fragment DECIMAL_EXPONENT : FLOATING_POINT_E SIGN? DECIMAL_LIT;
 
