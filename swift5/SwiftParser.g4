@@ -2,12 +2,12 @@
  * [The "BSD license"]
  Copyright (c) 2014 Terence Parr
  All rights reserved.
- 
+
  Redistribution and use in source and
  * binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
- 
+
  1.
  * Redistributions of source code must retain the above copyright
  notice, this list of conditions and the following
@@ -20,7 +20,7 @@
  * name of the author may not be used to endorse or promote products
  derived from this software without specific prior
  * written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,7 +36,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
- 
+
  Converted from Apple's doc, http://tinyurl.com/n8rkoue, to
  * ANTLR's
  meta-language.
@@ -53,7 +53,7 @@ top_level : statements? EOF;
 
 statements : (statement eos?)+;
 /* statements : statements_impl[-1];
- 
+
  statements_impl[int indexBefore]
  locals[
  int indexAfter = -1
@@ -248,9 +248,9 @@ platform_condition:
 swift_version : DECIMAL_LIT '.' DECIMAL_LIT;
 
 // Rule from docs: operating-system → macOS­ | iOS­ | watchOS­ | tvOS
-// 
+//
 // Code from apple/swift:­ #if (!os(Windows) || CYGWIN) && (arch(i386) || arch(x86_64))
-// 
+//
 // "#if os(Any)" gives error that Any is not an identifier. So I decided to use declaration_identifier
 operating_system	:	declaration_identifier;
 architecture		:	declaration_identifier;
@@ -261,13 +261,13 @@ architecture		:	declaration_identifier;
 // GRAMMAR OF A LINE CONTROL STATEMENT
 
 // NOTE: The rule is changed. Original rule:
-// 
+//
 // line_control_statement : '#sourceLocation' '(' 'file:' file_name ',' 'line:' line_number ')' | '#sourceLocation' '('
 // ')' ;
-// 
+//
 // This defines a token "file:", but this is valid for swift compiler: '#sourceLocation(file : "", line : 1)' (notice
 // spaces between "file" and ":")
-// 
+//
 // Modified rule:
 line_control_statement:
 	'#sourceLocation' '(' 'file' ':' file_name ',' 'line' ':' line_number ')'
@@ -776,11 +776,11 @@ attributes					:	attribute+;
 balanced_tokens				:	balanced_token*;
 
 // https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/Attributes.html#//apple_ref/swift/grammar/attributes
-// 
+//
 // Quote: balanced-token → (­balanced-tokens­opt­)­ balanced-token → [­balanced-tokens­opt­]­ balanced-token →
 // {­balanced-tokens­opt­}­ balanced-token → Any identifier, keyword, literal, or operator balanced-token → Any
 // punctuation except (­, )­, [­, ]­, {­, or }­
-// 
+//
 // Example: @available(*, deprecated, message: "it will be removed in Swift 4.0. Please use 'Collection' instead") Apple
 // doesn't provide proper grammar for attributes. It says "Any punctuation except (­, )­, [­, ]­, {­, or }­".
 balanced_token:
@@ -907,20 +907,20 @@ self_expression:
 	| 'self' '.' 'init'
 
 	// From ParseExpr.cpp. self and Self parsed with same code:
-	// 
+	//
 	// case tok::kw_self: // self case tok::kw_Self: // Self Result = makeParserResult(parseExprIdentifier());
-	// 
+	//
 
 	// However, later something happens and Self[1], Self
-	// 
+	//
 	// Example code from SetAlgebra.swift:
-	// 
+	//
 	// public var isEmpty: Bool { return self == Self() }
-	// 
+	//
 	// Also a valid code:
-	// 
+	//
 	// return self == Self() && self == Self.init() && Self.Other() == Self.Other()
-	// 
+	//
 	// So this is undocumented:
 	| 'Self'							// Self()
 	| 'Self' '.' declaration_identifier	// Self.This()
@@ -1032,7 +1032,7 @@ postfix_expression:
 // GRAMMAR OF A FUNCTION CALL EXPRESSION
 
 // See the optimization in postfix_expression. It should be doing exactly this:
-// 
+//
 // function-call-expression → postfix-expression­ function-call-argument-clause­ function-call-expression →
 // postfix-expression­ function-call-argument-clause­?­ trailing-closure
 
@@ -1169,7 +1169,7 @@ class_requirement : 'class';
 // GRAMMAR OF AN IDENTIFIER
 
 // identifier : Identifier | context_sensitive_keyword ;
-// 
+//
 // identifier is context sensitive
 
 // var x = 1; funx x() {}; class x {}
@@ -1180,12 +1180,12 @@ label_identifier : identifier | keyword_as_identifier_in_labels;
 
 /*
  declaration : variable_declaration;
- 
+
  variable_declaration : VAR identifier ASSIGN literal;
- 
+
  // Expressions
  expression_list : expression (',' expression)*;
- 
+
  expression : try_operator?; //prefix_expression
  binary_expressions?;
  */
@@ -1604,10 +1604,10 @@ postfix_operator : {SwiftBaseParser.isPostfixOp(_input)}? operator;
 
 operator:
 	operator_head (
-		{_input.get(_input.index()-1).getType()!=WS}? operator_character
+		{_input.Get(_input.Index-1).Type!=WS}? operator_character
 	)*
 	| dot_operator_head (
-		{_input.get(_input.index()-1).getType()!=WS}? dot_operator_character
+		{_input.Get(_input.Index-1).Type!=WS}? dot_operator_character
 	)*
 	;
 
