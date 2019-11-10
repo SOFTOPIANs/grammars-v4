@@ -31,7 +31,7 @@ channels { PhpComments, ErrorLexem, SkipChannel }
 tokens { HereDocEnd }
 
 options {
-    superClass=PhpBaseLexer;
+    superClass=PhpLexerBase;
 }
 
 SeaWhitespace:  [ \t\r\n]+ -> channel(HIDDEN);

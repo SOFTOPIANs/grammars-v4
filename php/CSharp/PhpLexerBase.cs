@@ -26,7 +26,7 @@ THE SOFTWARE.
 using Antlr4.Runtime;
 using static PhpParseTree.PhpLexer;
 
-public abstract class PhpBaseLexer : Lexer
+public abstract class PhpLexerBase : Lexer
 {
     private bool AspTags = true;
     private string _heredocIdentifier;
@@ -37,7 +37,7 @@ public abstract class PhpBaseLexer : Lexer
     protected bool _scriptTag;
     protected bool _styleTag;
 
-    protected PhpBaseLexer(ICharStream input)
+    protected PhpLexerBase(ICharStream input)
         : base(input)
     {
     }
