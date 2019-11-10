@@ -1,7 +1,7 @@
 /*
 PHP grammar.
 The MIT License (MIT).
-Copyright (c) 2015-2017, Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies.
+Copyright (c) 2015-2019, Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies.
 Copyright (c) 2019, Student Main for php7 support.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -81,7 +81,7 @@ phpBlock
     ;
 
 importStatement
-    : Import Namespace namespaceNameList ';'
+    : Import Namespace namespaceNameList SemiColon
     ;
 
 topStatement
@@ -94,7 +94,7 @@ topStatement
     ;
 
 useDeclaration
-    : Use (Function | Const)? useDeclarationContentList ';'
+    : Use (Function | Const)? useDeclarationContentList SemiColon
     ;
 
 useDeclarationContentList
@@ -106,7 +106,7 @@ useDeclarationContent
     ;
 
 namespaceDeclaration
-    : Namespace (namespaceNameList? OpenCurlyBracket namespaceStatement* '}' | namespaceNameList ';')
+    : Namespace (namespaceNameList? OpenCurlyBracket namespaceStatement* '}' | namespaceNameList SemiColon)
     ;
 
 namespaceStatement
@@ -213,7 +213,7 @@ statement
     | breakStatement
     | continueStatement
     | returnStatement
-    | yieldExpression ';'
+    | yieldExpression SemiColon
     | globalStatement
     | staticVariableStatement
     | echoStatement
@@ -229,7 +229,7 @@ statement
     ;
 
 emptyStatement
-    : ';'
+    : SemiColon
     ;
 
 blockStatement
@@ -238,7 +238,7 @@ blockStatement
 
 ifStatement
     : If parentheses statement elseIfStatement* elseStatement?
-    | If parentheses ':' innerStatementList elseIfColonStatement* elseColonStatement? EndIf ';'
+    | If parentheses ':' innerStatementList elseIfColonStatement* elseColonStatement? EndIf SemiColon
     ;
 
 elseIfStatement
@@ -258,15 +258,15 @@ elseColonStatement
     ;
 
 whileStatement
-    : While parentheses (statement | ':' innerStatementList EndWhile ';')
+    : While parentheses (statement | ':' innerStatementList EndWhile SemiColon)
     ;
 
 doWhileStatement
-    : Do statement While parentheses ';'
+    : Do statement While parentheses SemiColon
     ;
 
 forStatement
-    : For '(' forInit? ';' expressionList? ';' forUpdate? ')' (statement | ':' innerStatementList EndFor ';' )
+    : For '(' forInit? SemiColon expressionList? SemiColon forUpdate? ')' (statement | ':' innerStatementList EndFor SemiColon )
     ;
 
 forInit
@@ -278,31 +278,31 @@ forUpdate
     ;
 
 switchStatement
-    : Switch parentheses (OpenCurlyBracket ';'? switchBlock* '}' | ':' ';'? switchBlock* EndSwitch ';')
+    : Switch parentheses (OpenCurlyBracket SemiColon? switchBlock* '}' | ':' SemiColon? switchBlock* EndSwitch SemiColon)
     ;
 
 switchBlock
-    : ((Case expression | Default) (':' | ';'))+ innerStatementList
+    : ((Case expression | Default) (':' | SemiColon))+ innerStatementList
     ;
 
 breakStatement
-    : Break expression? ';'
+    : Break expression? SemiColon
     ;
 
 continueStatement
-    : Continue expression? ';'
+    : Continue expression? SemiColon
     ;
 
 returnStatement
-    : Return expression? ';'
+    : Return expression? SemiColon
     ;
 
 expressionStatement
-    : expression ';'
+    : expression SemiColon
     ;
 
 unsetStatement
-    : Unset '(' chainList ')' ';'
+    : Unset '(' chainList ')' SemiColon
     ;
 
 foreachStatement
@@ -310,7 +310,7 @@ foreachStatement
         ( '(' chain As '&'? assignable ('=>' '&'? chain)? ')'
         | '(' expression As assignable ('=>' '&'? chain)? ')'
         | '(' chain As List '(' assignmentList ')' ')' )
-      (statement | ':' innerStatementList EndForeach ';')
+      (statement | ':' innerStatementList EndForeach SemiColon)
     ;
 
 tryCatchFinally
@@ -326,15 +326,15 @@ finallyStatement
     ;
 
 throwStatement
-    : Throw expression ';'
+    : Throw expression SemiColon
     ;
 
 gotoStatement
-    : Goto identifier ';'
+    : Goto identifier SemiColon
     ;
 
 declareStatement
-    : Declare '(' declareList ')' (statement | ':' innerStatementList EndDeclare ';')
+    : Declare '(' declareList ')' (statement | ':' innerStatementList EndDeclare SemiColon)
     ;
 
 inlineHtmlStatement
@@ -360,7 +360,7 @@ typeHint
     ;
 
 globalStatement
-    : Global globalVar (',' globalVar)* ';'
+    : Global globalVar (',' globalVar)* SemiColon
     ;
 
 globalVar
@@ -370,23 +370,23 @@ globalVar
     ;
 
 echoStatement
-    : Echo expressionList ';'
+    : Echo expressionList SemiColon
     ;
 
 staticVariableStatement
-    : Static variableInitializer (',' variableInitializer)* ';'
+    : Static variableInitializer (',' variableInitializer)* SemiColon
     ;
 
 classStatement
-    : attributes propertyModifiers typeHint? variableInitializer (',' variableInitializer)* ';'
-    | attributes memberModifiers? Const typeHint? identifierInititalizer (',' identifierInititalizer)* ';'
+    : attributes propertyModifiers typeHint? variableInitializer (',' variableInitializer)* SemiColon
+    | attributes memberModifiers? Const typeHint? identifierInititalizer (',' identifierInititalizer)* SemiColon
     | attributes memberModifiers? Function '&'? identifier
           typeParameterListInBrackets? '(' formalParameterList ')' baseCtorCall? methodBody
     | Use qualifiedNamespaceNameList traitAdaptations
     ;
 
 traitAdaptations
-    : ';'
+    : SemiColon
     | OpenCurlyBracket traitAdaptationStatement* '}'
     ;
 
@@ -396,11 +396,11 @@ traitAdaptationStatement
     ;
 
 traitPrecedence
-    : qualifiedNamespaceName '::' identifier InsteadOf qualifiedNamespaceNameList ';'
+    : qualifiedNamespaceName '::' identifier InsteadOf qualifiedNamespaceNameList SemiColon
     ;
 
 traitAlias
-    : traitMethodReference As (memberModifier | memberModifier? identifier) ';'
+    : traitMethodReference As (memberModifier | memberModifier? identifier) SemiColon
     ;
 
 traitMethodReference
@@ -412,7 +412,7 @@ baseCtorCall
     ;
 
 methodBody
-    : ';'
+    : SemiColon
     | blockStatement
     ;
 
@@ -434,7 +434,7 @@ identifierInititalizer
     ;
 
 globalConstantDeclaration
-    : attributes Const identifierInititalizer (',' identifierInititalizer)* ';'
+    : attributes Const identifierInititalizer (',' identifierInititalizer)* SemiColon
     ;
 
 expressionList
@@ -481,7 +481,9 @@ expression
     | (Include | IncludeOnce) expression                        #SpecialWordExpression
     | (Require | RequireOnce) expression                        #SpecialWordExpression
 
-    | lambdaFunctionExpr                                        #LambdaFunctionExpression
+    | Static? Function '&'? '(' formalParameterList ')' lambdaFunctionUseVars? (':' typeHint)? blockStatement
+                                                                #LambdaFunctionExpression
+    | LambdaFn '(' formalParameterList')' '=>' expression       #LambdaFunctionExpression
 
     | <assoc=right> expression op='**' expression               #ArithmeticExpression
     | expression InstanceOf typeRef                             #InstanceOfExpression
@@ -503,8 +505,8 @@ expression
     | expression op='??' expression                             #NullCoalescingExpression
     | expression op='<=>' expression                            #SpaceshipExpression
 
-    | assignable assignmentOperator expression     #AssignmentExpression
-    | assignable Eq '&' (chain | newExpr)          #AssignmentExpression
+    | assignable assignmentOperator expression                  #AssignmentExpression
+    | assignable Eq '&' (chain | newExpr)                       #AssignmentExpression
 
     | expression op=LogicalAnd expression                       #LogicalExpression
     | expression op=LogicalXor expression                       #LogicalExpression
@@ -518,11 +520,6 @@ assignable
 
 arrayCreation
     : (Array '(' arrayItemList? ')' | '[' arrayItemList? ']') ('[' expression ']')?
-    ;
-
-lambdaFunctionExpr
-    : Static? Function '&'? '(' formalParameterList ')' lambdaFunctionUseVars? (':' typeHint)? blockStatement
-    | LambdaFn '(' formalParameterList')' '=>' expression
     ;
 
 newExpr
@@ -576,10 +573,10 @@ typeRef
     : (qualifiedNamespaceName | indirectTypeRef) genericDynamicArgs?
     | primitiveType
     | Static
-    | anoymousClass
+    | anonymousClass
     ;
 
-anoymousClass
+anonymousClass
     : attributes Private? modifier? Partial? (
       classEntryType typeParameterListInBrackets? (Extends qualifiedStaticTypeRef)? (Implements interfaceList)?
     | Interface identifier typeParameterListInBrackets? (Extends interfaceList)? )
@@ -665,8 +662,8 @@ stringConstant
     ;
 
 string
-    : StartHereDoc HereDocText+
-    | StartNowDoc HereDocText+
+    : StartHereDoc HereDocText* HereDocEnd
+    | StartNowDoc HereDocText* HereDocEnd
     | SingleQuoteString
     | DoubleQuote interpolatedStringPart* DoubleQuote
     ;
