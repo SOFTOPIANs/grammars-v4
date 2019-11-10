@@ -1,8 +1,8 @@
 <?php
 
 foo(<<< HEREDOC
-Heredoc line 1.
-Heredoc line 2.
+HEREDOC line 1.
+HEREDOC line 2;
 HEREDOC
 );
 
@@ -12,10 +12,13 @@ Nowdoc line 2.
 NOWDOC
 );
 
-$str = "asdf";
-
 $str1 = <<<HEREDOC1
 Hello world!
 HEREDOC1;
+
+$str2 = <<<TXT
+HEREDOC TEXT
+TXT
+;
 
 ?>

@@ -28,31 +28,33 @@ lexer grammar PhpLexer;
 
 channels { PhpComments, ErrorLexem, SkipChannel }
 
+tokens { HereDocEnd }
+
 options {
     superClass=PhpBaseLexer;
 }
 
 SeaWhitespace:  [ \t\r\n]+ -> channel(HIDDEN);
 HtmlText:       ~[<#]+;
-XmlStart:       '<' '?' 'xml' -> pushMode(XML);
+XmlStart:       '<?xml' -> pushMode(XML);
 PHPStartEcho:   PhpStartEchoFragment -> type(Echo), pushMode(PHP);
 PHPStart:       PhpStartFragment -> channel(SkipChannel), pushMode(PHP);
-HtmlScriptOpen: '<' 'script' { _scriptTag = true; } -> pushMode(INSIDE);
-HtmlStyleOpen:  '<' 'style' { _styleTag = true; } -> pushMode(INSIDE);
-HtmlComment:    '<' '!' '--' .*? '-->' -> channel(HIDDEN);
-HtmlDtd:        '<' '!' .*? '>';
+HtmlScriptOpen: '<script' { _scriptTag = true; } -> pushMode(INSIDE);
+HtmlStyleOpen:  '<style' { _styleTag = true; } -> pushMode(INSIDE);
+HtmlComment:    '<!--' .*? '-->' -> channel(HIDDEN);
+HtmlDtd:        '<!' .*? '>';
 HtmlOpen:       '<' -> pushMode(INSIDE);
 Shebang
     : '#' { this.IsNewLineOrStart(-2) }? '!' ~[\r\n]*
     ;
-NumberSign:     '#' ~[<]* -> more;
+NumberSign:     '#' ~'<'* -> more;
 Error:          .         -> channel(ErrorLexem);
 
 // TODO: parse xml attributes.
 mode XML;
 
-XmlText:                  ~[?]+;
-XmlClose:                 '?' '>' -> popMode;
+XmlText:                  ~'?'+;
+XmlClose:                 '?>' -> popMode;
 XmlText2:                 '?' -> type(XmlText);
 
 mode INSIDE;
@@ -69,7 +71,7 @@ HtmlStartDoubleQuoteString: '\\'? '"'  -> pushMode(HtmlDoubleQuoteStringMode);
 HtmlHex:                    '#' HexDigit+ ;
 HtmlDecimal:                Digit+;
 HtmlSpace:                  [ \t\r\n]+ -> channel(HIDDEN);
-HtmlName:                   NameStartChar NameChar*;
+HtmlName:                   HtmlNameStartChar HtmlNameChar*;
 ErrorInside:                .          -> channel(ErrorLexem);
 
 mode HtmlQuoteStringMode;
@@ -88,12 +90,15 @@ HtmlEndDoubleQuoteString:      '"' '"'? -> popMode;
 HtmlDoubleQuoteString:         ~[<"]+;
 ErrorHtmlDoubleQuote:          .          -> channel(ErrorLexem);
 
-// Parse JavaScript with https://github.com/antlr/grammars-v4/tree/master/ecmascript if necessary.
+// Parse JavaScript with https://github.com/antlr/grammars-v4/tree/master/javascript if necessary.
 // Php blocks can exist inside Script blocks too.
 mode SCRIPT;
 
-ScriptText:               ~[<]+;
-ScriptClose:             '<' '/' 'script'? '>' -> popMode;
+ScriptText:               ~'<'+;
+// TODO: handle JS strings, but handle <?php tags inside them
+//ScriptString:             '"' (~'"' | '\\' ('\r'? '\n' | .))* '"' -> type(ScriptText);
+//ScriptString2:            '\'' (~'\'' | '\\' ('\r'? '\n' | .))* '\'' -> type(ScriptText);
+HtmlScriptClose:          '</' 'script'? '>' -> popMode;
 PHPStartInsideScriptEcho: PhpStartEchoFragment -> type(Echo), pushMode(PHP);
 PHPStartInsideScript:     PhpStartFragment -> channel(SkipChannel), pushMode(PHP);
 ScriptText2:              '<' -> type(ScriptText);
@@ -295,8 +300,8 @@ Eq:                 '=';
 Quote:              '\'';
 BackQuote:          '`';
 
-VarName:            '$' [a-zA-Z_][a-zA-Z_0-9]*;
-Label:              [a-zA-Z_][a-zA-Z_0-9]*;
+VarName:            '$' NameString;
+Label:              [a-z_][a-z_0-9]*;
 Octal:              '0' [0-7]+;
 Decimal:            Digit+;
 Real:               (Digit+ '.' Digit* | '.' Digit+) ExponentPart?
@@ -309,22 +314,22 @@ SingleQuoteString: '\'' (~('\'' | '\\') | '\\' . )* '\'';
 DoubleQuote:       '"' -> pushMode(InterpolationString);
 
 StartNowDoc
-    : '<<<' [ \t]* '\'' [a-zA-Z_][a-zA-Z_0-9]* '\''  { this.ShouldPushHereDocMode(1) }? -> pushMode(HereDoc)
+    : '<<<' [ \t]* '\'' NameString '\'' '\r'? '\n' -> pushMode(HereDoc)
     ;
 StartHereDoc
-    : '<<<' [ \t]* [a-zA-Z_][a-zA-Z_0-9]* { this.ShouldPushHereDocMode(1) }? -> pushMode(HereDoc)
+    : '<<<' [ \t]* NameString '\r'? '\n'           -> pushMode(HereDoc)
     ;
 ErrorPhp:                   .          -> channel(ErrorLexem);
 
 mode InterpolationString;
 
-VarNameInInterpolation:     '$' [a-zA-Z_][a-zA-Z_0-9]*                          -> type(VarName); // TODO: fix such cases: "$people->john"
+VarNameInInterpolation:     '$' NameString                                      -> type(VarName); // TODO: fix such cases: "$people->john"
 DollarString:               '$'                                                 -> type(StringPart);
 CurlyDollar:                '{' { this.IsCurlyDollar(1) }? { this.SetInsideString(); }  -> channel(SkipChannel), pushMode(PHP);
 CurlyString:                '{'                                                 -> type(StringPart);
 EscapedChar:                '\\' .                                              -> type(StringPart);
 DoubleQuoteInInterpolation: '"'                                                 -> type(DoubleQuote), popMode;
-UnicodeEscape:              '\\u{' [a-zA-Z0-9] [a-zA-Z0-9]+ '}';
+UnicodeEscape:              '\\u{' [a-zA-Z0-9][a-zA-Z0-9]+ '}';
 StringPart:                 ~[${\\"]+;
 
 mode SingleLineCommentMode;
@@ -336,15 +341,25 @@ CommentEnd:              [\r\n] -> channel(SkipChannel), popMode; // exit from c
 
 mode HereDoc;  // TODO: interpolation for heredoc strings.
 
-HereDocText: ~[\r\n]*? ('\r'? '\n' | '\r');
+HereDocText    : ~[\r\n;]+;
+HereDocSemi    : (';' | '\r'? '\n') -> type(HereDocText);
 
 // fragments.
 // '<?=' will be transformed to 'echo' token.
 // '<?= "Hello world"; ?>' will be transformed to '<?php echo "Hello world"; ?>'
 fragment PhpStartEchoFragment: '<' ('?' '=' | { this.HasAspTags() }? '%' '=');
 fragment PhpStartFragment:     '<' ('?' 'php'? | { this.HasAspTags() }? '%');
-fragment NameChar
-    : NameStartChar
+fragment NameString: [a-zA-Z_\u0080-\ufffe][a-zA-Z0-9_\u0080-\ufffe]*;
+fragment HtmlNameStartChar
+    : [:a-z]
+    | '\u2070'..'\u218F'
+    | '\u2C00'..'\u2FEF'
+    | '\u3001'..'\uD7FF'
+    | '\uF900'..'\uFDCF'
+    | '\uFDF0'..'\uFFFD'
+    ;
+fragment HtmlNameChar
+    : HtmlNameStartChar
     | '-'
     | '_'
     | '.'
@@ -353,14 +368,6 @@ fragment NameChar
     | '\u0300'..'\u036F'
     | '\u203F'..'\u2040'
     ;
-fragment NameStartChar
-    : [:a-zA-Z]
-    | '\u2070'..'\u218F'
-    | '\u2C00'..'\u2FEF'
-    | '\u3001'..'\uD7FF'
-    | '\uF900'..'\uFDCF'
-    | '\uFDF0'..'\uFFFD'
-    ;
 fragment ExponentPart:         'e' [+-]? Digit+;
 fragment Digit:                [0-9_];
-fragment HexDigit:             [a-fA-F0-9_];
+fragment HexDigit:             [a-f0-9_];

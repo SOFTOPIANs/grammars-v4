@@ -1,7 +1,7 @@
 /*
 PHP grammar.
 The MIT License (MIT).
-Copyright (c) 2015-2017, Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies.
+Copyright (c) 2015-2019, Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies.
 Copyright (c) 2019, Thierry Marianne (thierry.marianne@weaving-the-web.org)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,28 +24,30 @@ THE SOFTWARE.
 */
 
 using Antlr4.Runtime;
-// Replace PhpParser with its fully qualified name below
-//using static PhpLexer;
+using static PhpParseTree.PhpLexer;
 
 public abstract class PhpBaseLexer : Lexer
 {
-    protected bool AspTags = true;
+    private bool AspTags = true;
+    private string _heredocIdentifier;
+    private int _prevTokenType;
+    private string _htmlNameText;
+    private bool _phpScript;
+    private bool _insideString;
     protected bool _scriptTag;
     protected bool _styleTag;
-    protected string _heredocIdentifier;
-    protected int _prevTokenType;
-    protected string _htmlNameText;
-    protected bool _phpScript;
-    protected bool _insideString;
 
-    public PhpBaseLexer(ICharStream input)
+    protected PhpBaseLexer(ICharStream input)
         : base(input)
     {
     }
 
     public override IToken NextToken()
     {
-        CommonToken token = (CommonToken)base.NextToken();
+        IToken token = base.NextToken();
+
+        int type = token.Type;
+        int channel = token.Channel;
 
         if (token.Type == PHPEnd || token.Type == PHPEndSingleLineComment)
         {
@@ -60,20 +62,20 @@ public abstract class PhpBaseLexer : Lexer
             if (string.Equals(token.Text, "</script>", System.StringComparison.Ordinal))
             {
                 _phpScript = false;
-                token.Type = ScriptClose;
+                type = HtmlScriptClose;
             }
             else
             {
-                // Add semicolon to the end of statement if it is absente.
+                // Add semicolon to the end of statement if it is absence.
                 // For example: <?php echo "Hello world" ?>
                 if (_prevTokenType == SemiColon || _prevTokenType == Colon
                     || _prevTokenType == OpenCurlyBracket || _prevTokenType == CloseCurlyBracket)
                 {
-                    token.Channel = SkipChannel;
+                    channel = SkipChannel;
                 }
                 else
                 {
-                    token.Type = SemiColon;
+                    type = SemiColon;
                 }
             }
         }
@@ -100,21 +102,12 @@ public abstract class PhpBaseLexer : Lexer
                     break;
 
                 case HereDocText:
-                    if (CheckHeredocEnd(token.Text))
-                    {
-                        PopMode();
+                    string tokenText = token.Text;
 
-                        var heredocIdentifier = GetHeredocIdentifier(token.Text);
-                        if (token.Text.Trim().EndsWith(";"))
-                        {
-                            token.Text = heredocIdentifier + ";\n";
-                            token.Type = SemiColon;
-                        }
-                        else
-                        {
-                            token = (CommonToken)base.NextToken();
-                            token.Text = heredocIdentifier + "\n;";
-                        }
+                    if (_input.La(-tokenText.Length - 1) == '\n' && string.Equals(tokenText.Trim(), _heredocIdentifier, System.StringComparison.Ordinal))
+                    {
+                        type = HereDocEnd;
+                        PopMode();
                     }
                     break;
             }
@@ -127,19 +120,20 @@ public abstract class PhpBaseLexer : Lexer
             }
         }
 
-        return token;
-    }
-
-    protected string GetHeredocIdentifier(string text)
-    {
-        text = text.Trim();
-        bool semi = text.Length > 0 ? text[text.Length - 1] == ';' : false;
-        return semi ? text.Substring(0, text.Length - 1) : text;
-    }
-
-    protected bool CheckHeredocEnd(string text)
-    {
-        return string.Equals(GetHeredocIdentifier(text), _heredocIdentifier, System.StringComparison.Ordinal);
+        return type == token.Type && channel == token.Channel
+            ? token
+#if LIGHT_TOKEN
+            : new PT.PM.AntlrUtils.LightToken((PT.PM.AntlrUtils.LightInputStream)token.InputStream, type, channel,
+                token.TokenIndex, token.StartIndex, token.StopIndex);
+#else
+            : new CommonToken(new System.Tuple<ITokenSource, ICharStream>(token.TokenSource, token.InputStream), type,
+                channel, token.StartIndex, token.StopIndex)
+            {
+                Text = token.Text,
+                Line = token.Line,
+                Column = token.Column
+            };
+#endif
     }
 
     protected bool IsNewLineOrStart(int pos)
@@ -152,14 +146,7 @@ public abstract class PhpBaseLexer : Lexer
         PopMode();
         if (_scriptTag)
         {
-            if (!_phpScript)
-            {
-                PushMode(SCRIPT);
-            }
-            else
-            {
-                PushMode(PHP);
-            }
+            PushMode(!_phpScript ? SCRIPT : PHP);
             _scriptTag = false;
         }
         else if (_styleTag)
@@ -189,16 +176,13 @@ public abstract class PhpBaseLexer : Lexer
         }
     }
 
-    protected bool ShouldPushHereDocMode(int pos)
+    protected bool IsCurlyDollar(int pos)
     {
-        return _input.La(pos) == '\r' || _input.La(pos) == '\n';
-    }
-
-    protected bool IsCurlyDollar(int pos) {
         return _input.La(pos) == '$';
     }
 
-    protected void SetInsideString() {
+    protected void SetInsideString()
+    {
         _insideString = true;
     }
 }
