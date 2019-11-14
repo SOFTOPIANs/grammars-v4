@@ -1348,13 +1348,11 @@ routineBody
 
 blockStatement
     : (uid ':')? BEGIN
-      (
         (declareVariable SEMI)*
         (declareCondition SEMI)*
         (declareCursor SEMI)*
         (declareHandler SEMI)*
         procedureSqlStatement*
-      )?
       END uid?
     ;
 
