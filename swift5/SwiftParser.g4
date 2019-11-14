@@ -440,12 +440,10 @@ function_result : arrow_operator attributes? type;
 
 function_body : code_block;
 
-parameter_clause	:	'(' ')' | '(' parameter_list ')';
-parameter_list		:	parameter (',' parameter)*;
+parameter_clause	:	'(' (parameter (',' parameter)*)* ')';
 
 parameter:
 	external_parameter_name? local_parameter_name type_annotation default_argument_clause?
-	| external_parameter_name? local_parameter_name type_annotation
 	| external_parameter_name? local_parameter_name type_annotation range_operator
 	;
 external_parameter_name : label_identifier;
@@ -718,7 +716,7 @@ mutation_modifier : 'mutating' | 'nonmutating';
 // GRAMMAR OF A PATTERN
 
 pattern:
-	wildcard_pattern type_annotation?
+	UNDERSCORE type_annotation?
 	| identifier_pattern type_annotation?
 	| value_binding_pattern
 	| tuple_pattern type_annotation?
@@ -728,10 +726,6 @@ pattern:
 	| pattern 'as' type
 	| expression_pattern
 	;
-
-// GRAMMAR OF A WILDCARD PATTERN
-
-wildcard_pattern : '_';
 
 // GRAMMAR OF AN IDENTIFIER PATTERN
 
@@ -855,7 +849,7 @@ primary_expression:
 	| parenthesized_expression
 	| tuple_expression
 	| implicit_member_expression
-	| wildcard_expression
+	| UNDERSCORE
 	| selector_expression
 	| key_path_expression
 	;
@@ -990,10 +984,6 @@ parenthesized_expression : '(' expression ')';
 tuple_expression : '(' ')' | '(' tuple_element (',' tuple_element)+ ')';
 
 tuple_element : expression | label_identifier ':' expression;
-
-// GRAMMAR OF A WILDCARD EXPRESSION
-
-wildcard_expression : '_';
 
 // GRAMMAR OF A SELECTOR EXPRESSION
 
@@ -1223,7 +1213,7 @@ try_operator : TRY (QUESTION | BANG)?;
 
 // Identifiers and Literals
 
-identifier : IDENTIFIER_TOKEN;
+identifier : IDENTIFIER_TOKEN | UNDERSCORE;
 
 identifier_list : identifier (DOT identifier)*;
 

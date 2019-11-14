@@ -353,9 +353,6 @@ public abstract class SwiftBaseParser : Parser {
     }
 
 /*    public static bool isSeparatedStatement(ITokenStream tokens, int indexOfPreviousStatement) {
-        //System.out.println("------");
-        //System.out.println("indexOfPreviousStatement: " + indexOfPreviousStatement);
-
         int indexFrom = indexOfPreviousStatement - 1;
         int indexTo = tokens.Index - 1;
 
@@ -380,7 +377,13 @@ public abstract class SwiftBaseParser : Parser {
 
         return true;
     }
-    */
+    
+    protected bool checkPreviousTokenText(string text)
+    {
+        return _input.Lt(1).Text?.Equals(text) ?? false;
+    }
+*/
+
 /*
     public bool isSeparatedStatement(ITokenStream tokens, int indexOfPreviousStatement) {
         // Get the token ahead of the current index.

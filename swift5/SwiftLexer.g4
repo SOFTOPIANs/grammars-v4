@@ -2,12 +2,12 @@
  * [The "BSD license"]
  Copyright (c) 2014 Terence Parr
  All rights reserved.
- 
+
  Redistribution and use in source and
  * binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
- 
+
  1.
  * Redistributions of source code must retain the above copyright
  notice, this list of conditions and the following
@@ -20,7 +20,7 @@
  * name of the author may not be used to endorse or promote products
  derived from this software without specific prior
  * written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,7 +36,7 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
- 
+
  Converted from Apple's doc, http://tinyurl.com/n8rkoue, to
  * ANTLR's
  meta-language.
@@ -236,7 +236,8 @@ TERMINATOR		:	[\r\n]+							-> channel(HIDDEN);
 WS				:	[ \n\r\t\u000B\u000C\u0000]+	-> channel(HIDDEN);
 
 IDENTIFIER_TOKEN:
-	'`'? IDENTIFIER_HEAD IDENTIFIER_CHARACTERS? '`'?
+    IDENTIFIER_HEAD IDENTIFIER_CHARACTERS?
+    |'`' IDENTIFIER_HEAD IDENTIFIER_CHARACTERS? '`'
 	| '$' PURE_DECIMAL_DIGIT+
 	;
 
