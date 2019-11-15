@@ -1026,11 +1026,15 @@ postfix_expression:
 // function-call-expression → postfix-expression­ function-call-argument-clause­ function-call-expression →
 // postfix-expression­ function-call-argument-clause­?­ trailing-closure
 
-function_call_argument_clause : '(' ')' | '(' function_call_argument_list ')';
+/*
+function_call_argument_clause : '(' function_call_argument_list? ')';
 
 function_call_argument_list:
 	function_call_argument (',' function_call_argument)*
 	;
+*/
+
+function_call_argument_clause : '(' function_call_argument (',' function_call_argument)* ')';
 
 function_call_argument:
 	expression

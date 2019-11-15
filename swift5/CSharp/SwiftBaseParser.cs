@@ -1,11 +1,3 @@
-/*import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.misc.Interval;
-
-import java.util.BitSet;
-*/
-
 using System;
 using System.Collections;
 using Antlr4.Runtime;
@@ -13,8 +5,6 @@ using Antlr4.Runtime.Misc;
 using PT.PM.SwiftParseTreeUst;
 
 public abstract class SwiftBaseParser : Parser {
-
-    public static int TERMINATOR2, WS2, COMMENT2;
 
     protected SwiftBaseParser(ITokenStream input) : base(input)
     {
