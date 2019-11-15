@@ -69,7 +69,9 @@ statement: (
 		expression
 		| declaration
 		| loop_statement
-		| branch_statement
+		| if_statement
+		| guard_statement
+		| switch_statement
 		| labeled_statement
 		| control_transfer_statement
 		| defer_statement
@@ -128,8 +130,6 @@ optional_binding_condition:
 repeat_while_statement : 'repeat' code_block 'while' expression;
 
 // GRAMMAR OF A BRANCH STATEMENT
-
-branch_statement : if_statement | guard_statement | switch_statement;
 
 // GRAMMAR OF AN IF STATEMENT
 
@@ -801,7 +801,7 @@ any_punctuation_for_balanced_token:
 // Expressions
 
 // GRAMMAR OF AN EXPRESSION
-expression : try_operator? prefix_expression binary_expressions?;
+expression : try_operator? prefix_expression binary_expression*;
 
 expression_list : expression (',' expression)*;
 
@@ -827,8 +827,6 @@ binary_expression:
 	| conditional_operator try_operator? prefix_expression
 	| type_casting_operator
 	;
-
-binary_expressions : binary_expression+;
 
 // GRAMMAR OF A CONDITIONAL OPERATOR
 
