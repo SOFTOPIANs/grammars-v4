@@ -801,7 +801,7 @@ any_punctuation_for_balanced_token:
 // Expressions
 
 // GRAMMAR OF AN EXPRESSION
-expression : try_operator? prefix_expression binary_expression*;
+expression : try_operator?  binary_expression;
 
 expression_list : expression (',' expression)*;
 
@@ -822,10 +822,11 @@ in_out_expression : '&' declaration_identifier;
 // GRAMMAR OF A BINARY EXPRESSION
 
 binary_expression:
-	binary_operator prefix_expression
-	| assignment_operator try_operator? prefix_expression
-	| conditional_operator try_operator? prefix_expression
+	binary_expression binary_operator binary_expression
+	| binary_expression assignment_operator try_operator? binary_expression
+	| <assoc=right> binary_expression conditional_operator try_operator? binary_expression
 	| type_casting_operator
+	| prefix_expression
 	;
 
 // GRAMMAR OF A CONDITIONAL OPERATOR
