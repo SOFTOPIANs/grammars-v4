@@ -431,10 +431,7 @@ function_head : attributes? declaration_modifiers? 'func';
 
 function_name : declaration_identifier | operator;
 
-function_signature:
-	parameter_clause 'throws'? function_result?
-	| parameter_clause 'rethrows' function_result?
-	;
+function_signature : parameter_clause ('throws' | 'rethrows')? function_result?;
 
 function_result : arrow_operator attributes? type;
 
@@ -943,23 +940,14 @@ closure_signature:
 
 closure_parameter_clause:
 	'(' ')'
-	| '(' closure_parameter_list ')'
-	| closure_parameter_clause_identifier_list
+	| '(' closure_parameter (',' closure_parameter)* ')'
+	| declaration_identifier (',' declaration_identifier)*
 	;
-
-// Renamed rule "identifier_list"
-closure_parameter_clause_identifier_list:
-	declaration_identifier (',' declaration_identifier)*
-	;
-
-closure_parameter_list : closure_parameter (',' closure_parameter)*;
 
 closure_parameter:
-	closure_parameter_name type_annotation?
-	| closure_parameter_name type_annotation range_operator
+	label_identifier type_annotation?
+	| label_identifier type_annotation range_operator
 	;
-
-closure_parameter_name : label_identifier;
 
 capture_list : '[' capture_list_items ']';
 
@@ -1218,7 +1206,7 @@ try_operator : TRY (QUESTION | BANG)?;
 
 identifier : IDENTIFIER_TOKEN | UNDERSCORE;
 
-identifier_list : identifier (DOT identifier)*;
+identifier_list : identifier (COMMA identifier)*;
 
 integer : BINARY_LIT | DECIMAL_LIT | OCTAL_LIT | HEX_LIT;
 
