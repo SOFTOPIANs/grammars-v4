@@ -424,7 +424,7 @@ typealias_assignment	:	assignment_operator type;
 
 // GRAMMAR OF A FUNCTION DECLARATION
 function_declaration:
-	function_head function_name generic_parameter_clause? function_signature generic_where_clause? function_body?
+	function_head function_name generic_parameter_clause? function_signature generic_where_clause? code_block
 	;
 
 function_head : attributes? declaration_modifiers? 'func';
@@ -434,8 +434,6 @@ function_name : declaration_identifier | operator;
 function_signature : parameter_clause ('throws' | 'rethrows')? function_result?;
 
 function_result : arrow_operator attributes? type;
-
-function_body : code_block;
 
 parameter_clause	:	'(' (parameter (',' parameter)*)* ')';
 
@@ -990,7 +988,7 @@ postfix_expression:
 	primary_expression															# primary
 	| postfix_expression postfix_operator										# postfix_operation
 	| postfix_expression function_call_argument_clause							# function_call_expression
-	| postfix_expression function_call_argument_clause? trailing_closure		# function_call_expression_with_closure
+	| postfix_expression function_call_argument_clause? closure_expression		# function_call_expression_with_closure
 	| postfix_expression '.' 'init'												# initializer_expression
 	| postfix_expression '.' 'init' '(' argument_names ')'						# initializer_expression_with_args
 	| postfix_expression '.' PURE_DECIMAL_DIGITS								# explicit_member_expression1
@@ -1021,7 +1019,7 @@ function_call_argument_list:
 	;
 */
 
-function_call_argument_clause : '(' function_call_argument (',' function_call_argument)* ')';
+function_call_argument_clause : '(' function_call_argument? (',' function_call_argument)* ')';
 
 function_call_argument:
 	expression
@@ -1029,8 +1027,6 @@ function_call_argument:
 	| operator
 	| label_identifier ':' operator
 	;
-
-trailing_closure : closure_expression;
 
 // GRAMMAR OF AN EXPLICIT MEMBER EXPRESSION
 
@@ -1080,27 +1076,12 @@ element_name		:	label_identifier;
 
 // GRAMMAR OF A FUNCTION TYPE
 
-function_type:
-	attributes? function_type_argument_clause 'throws'? arrow_operator type
-	| attributes? function_type_argument_clause 'rethrows' arrow_operator type
-	;
-
-function_type_argument_clause:
-	'(' ')'
-	| '(' function_type_argument_list range_operator? ')'
-	;
-
-function_type_argument_list:
-	function_type_argument
-	| function_type_argument ',' function_type_argument_list
-	;
+function_type: attributes? '(' function_type_argument? (',' function_type_argument)* range_operator? ')' (THROWS | RETHROWS)? arrow_operator type;
 
 function_type_argument:
 	attributes? 'inout'? type
-	| argument_label type_annotation
+	| UNDERSCORE? label_identifier type_annotation
 	;
-
-argument_label : label_identifier;
 
 // GRAMMAR OF AN ARRAY TYPE
 
