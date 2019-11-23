@@ -133,8 +133,7 @@ repeat_while_statement : 'repeat' code_block 'while' expression;
 
 // GRAMMAR OF AN IF STATEMENT
 
-if_statement	:	'if' condition_list code_block else_clause?;
-else_clause		:	'else' code_block | 'else' if_statement;
+if_statement	:	'if' condition_list code_block ('else' (code_block | if_statement))?;
 
 // GRAMMAR OF A GUARD STATEMENT
 
@@ -796,13 +795,17 @@ any_punctuation_for_balanced_token:
 // Expressions
 
 // GRAMMAR OF AN EXPRESSION
-expression : try_operator?  binary_expression;
+// Broke canonical right-accoc rule
+// since the most of binaryExprs are left-accoc
+
+expression : try_operator?  prefix_or_binary_expression;
 
 expression_list : expression (',' expression)*;
 
 // GRAMMAR OF A PREFIX EXPRESSION
+// Corresponds to the prefixExpr from the Swift spec
 
-prefix_expression:
+prefix_expression_original:
 	prefix_operator postfix_expression
 	| postfix_expression
 	| in_out_expression
@@ -810,18 +813,14 @@ prefix_expression:
 
 in_out_expression : '&' declaration_identifier;
 
-// GRAMMAR OF A TRY EXPRESSION
-
-// try_operator : 'try' '?' | 'try' '!' | 'try';
-
 // GRAMMAR OF A BINARY EXPRESSION
 
-binary_expression:
-	binary_expression binary_operator binary_expression
-	| binary_expression assignment_operator try_operator? binary_expression
-	| <assoc=right> binary_expression conditional_operator try_operator? binary_expression
+prefix_or_binary_expression:
+	prefix_or_binary_expression binary_operator prefix_or_binary_expression
+	| prefix_or_binary_expression assignment_operator try_operator? prefix_or_binary_expression
+	| <assoc=right> prefix_or_binary_expression conditional_operator try_operator? prefix_or_binary_expression
 	| type_casting_operator
-	| prefix_expression
+	| prefix_expression_original
 	;
 
 // GRAMMAR OF A CONDITIONAL OPERATOR
@@ -1149,7 +1148,7 @@ label_identifier : identifier | keyword_as_identifier_in_labels;
  expression_list : expression (',' expression)*;
 
  expression : try_operator?; //prefix_expression
- binary_expressions?;
+ prefix_or_binary_expressions?;
  */
 
 /*
