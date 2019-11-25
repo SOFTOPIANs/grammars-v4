@@ -380,11 +380,11 @@ initializer			:	assignment_operator expression;
 // GRAMMAR OF A VARIABLE DECLARATION
 
 variable_declaration:
-	variable_declaration_head variable_name type_annotation code_block
-	| variable_declaration_head variable_name type_annotation getter_setter_block
+	variable_declaration_head variable_name type_annotation getter_setter_block
 	| variable_declaration_head variable_name type_annotation getter_setter_keyword_block
 	| variable_declaration_head variable_name type_annotation initializer? willSet_didSet_block
-	| variable_declaration_head variable_name type_annotation type_annotation initializer? willSet_didSet_block
+	| variable_declaration_head variable_name initializer willSet_didSet_block
+	| variable_declaration_head variable_name type_annotation code_block
 	| variable_declaration_head pattern_initializer_list
 	;
 
@@ -806,8 +806,7 @@ expression_list : expression (',' expression)*;
 // Corresponds to the prefixExpr from the Swift spec
 
 prefix_expression_original:
-	prefix_operator postfix_expression
-	| postfix_expression
+	prefix_operator? postfix_expression	
 	| in_out_expression
 	;
 
@@ -850,8 +849,8 @@ primary_expression:
 // GRAMMAR OF A LITERAL EXPRESSION
 
 literal_expression:
-	literal
-	| array_literal
+	array_literal
+	| literal
 	| dictionary_literal
 	| '#file'
 	| '#line'
@@ -860,14 +859,7 @@ literal_expression:
 	| '#dsohandle' // Private Apple stuff. Not in docs, but in compiler and in sources of swift.
 	;
 
-array_literal : '[' array_literal_items? ']';
-
-array_literal_items:
-	array_literal_item ','?
-	| array_literal_item ',' array_literal_items
-	;
-
-array_literal_item : expression;
+array_literal : '[' expression_list? ','? ']';
 
 dictionary_literal : '[' dictionary_literal_items ']' | '[' ':' ']';
 
