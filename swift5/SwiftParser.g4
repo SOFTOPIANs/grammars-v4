@@ -380,13 +380,13 @@ initializer			:	assignment_operator expression;
 // GRAMMAR OF A VARIABLE DECLARATION
 
 variable_declaration:
-	variable_declaration_head variable_name type_annotation getter_setter_block
-	| variable_declaration_head variable_name type_annotation getter_setter_keyword_block
-	| variable_declaration_head variable_name type_annotation initializer? willSet_didSet_block
-	| variable_declaration_head variable_name initializer willSet_didSet_block
-	| variable_declaration_head variable_name type_annotation code_block
-	| variable_declaration_head pattern_initializer_list
-	;
+	variable_declaration_head ( variable_name type_annotation ( getter_setter_block
+	                                                          | getter_setter_keyword_block
+															  | initializer? willSet_didSet_block
+															  | code_block) 
+	                          | ( variable_name initializer willSet_didSet_block
+							    | pattern_initializer_list)
+	                          );
 
 variable_declaration_head	:	attributes? declaration_modifiers? 'var';
 variable_name				:	declaration_identifier;
@@ -818,7 +818,7 @@ prefix_or_binary_expression:
 	prefix_or_binary_expression binary_operator prefix_or_binary_expression
 	| prefix_or_binary_expression assignment_operator try_operator? prefix_or_binary_expression
 	| <assoc=right> prefix_or_binary_expression conditional_operator try_operator? prefix_or_binary_expression
-	| type_casting_operator
+	| prefix_or_binary_expression type_casting_operator
 	| prefix_expression_original
 	;
 
@@ -828,12 +828,12 @@ conditional_operator : '?' try_operator? expression ':';
 
 // GRAMMAR OF A TYPE_CASTING OPERATOR
 
-type_casting_operator : 'is' type | 'as' type | 'as' '?' type | 'as' '!' type;
+type_casting_operator : ('is' | 'as' ('!' | '?')? ) type;
 
 // GRAMMAR OF A PRIMARY EXPRESSION
 
-primary_expression:
-	declaration_identifier generic_argument_clause?
+primary_expression
+    : declaration_identifier generic_argument_clause?
 	| literal_expression
 	| self_expression
 	| superclass_expression
@@ -848,8 +848,8 @@ primary_expression:
 
 // GRAMMAR OF A LITERAL EXPRESSION
 
-literal_expression:
-	array_literal
+literal_expression
+    : array_literal
 	| literal
 	| dictionary_literal
 	| '#file'
