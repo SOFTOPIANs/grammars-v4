@@ -231,7 +231,7 @@ endif_directive		:	'#endif';
 compilation_condition:
 	platform_condition
 	| label_identifier
-	| BOOL_LIT
+	| booleanLiteral
 	| '(' compilation_condition ')'
 	| '!' compilation_condition
 	| compilation_condition compilation_condition_AND compilation_condition
@@ -318,8 +318,8 @@ generic_argument		:	type;
 
 // GRAMMAR OF A DECLARATION
 
-declaration:
-	import_declaration
+declaration
+    : import_declaration
 	| constant_declaration
 	| variable_declaration
 	| typealias_declaration
@@ -509,7 +509,7 @@ raw_value_style_enum_case : enum_case_name raw_value_assignment?;
 
 raw_value_assignment : assignment_operator raw_value_literal;
 
-raw_value_literal : numeric_literal | Static_string_literal | BOOL_LIT;
+raw_value_literal : numeric_literal | Static_string_literal | booleanLiteral;
 
 // GRAMMAR OF A STRUCTURE DECLARATION TODO did not update
 
@@ -658,7 +658,7 @@ precedence_group_relation:
 	| 'lowerThan' ':' precedence_group_names
 	;
 
-precedence_group_assignment : 'assignment' ':' BOOL_LIT;
+precedence_group_assignment : 'assignment' ':' booleanLiteral;
 
 precedence_group_associativity	:	'associativity' ':' associativity;
 associativity					:	'left' | 'right' | 'none';
@@ -908,15 +908,9 @@ self_expression:
 
 // GRAMMAR OF A SUPERCLASS EXPRESSION
 
-superclass_expression:
-	superclass_method_expression
-	| superclass_subscript_expression
-	| superclass_initializer_expression
-	;
-
-superclass_method_expression		:	'super' '.' declaration_identifier;
-superclass_subscript_expression		:	'super' '[' expression ']';
-superclass_initializer_expression	:	'super' '.' 'init';
+superclass_expression : SUPER ( '.' (declaration_identifier
+                                    | 'init')
+							  | '[' function_call_argument (',' function_call_argument)* ']');
 
 // GRAMMAR OF A CLOSURE EXPRESSION
 
@@ -1012,11 +1006,10 @@ function_call_argument_list:
 
 function_call_argument_clause : '(' function_call_argument? (',' function_call_argument)* ')';
 
-function_call_argument:
-	expression
-	| label_identifier ':' expression
+function_call_argument
+    : expression
 	| operator
-	| label_identifier ':' operator
+	| label_identifier ':' (expression | operator)
 	;
 
 // GRAMMAR OF AN EXPLICIT MEMBER EXPRESSION
@@ -1182,7 +1175,9 @@ identifier_list : identifier (COMMA identifier)*;
 
 integer : BINARY_LIT | DECIMAL_LIT | OCTAL_LIT | HEX_LIT;
 
-literal : BOOL_LIT | numeric_literal | NIL_LIT | string_literal;
+literal : booleanLiteral | numeric_literal | NIL_LIT | string_literal;
+
+booleanLiteral: TRUE | FALSE;
 
 // TODO : Fix predicate for correct processing for negative numbers
 numeric_literal : SUB? (integer | FLOAT_LIT);
@@ -1356,8 +1351,8 @@ keyword_as_identifier_in_declarations:
 	| 'x86_64'
 	;*/
 
-keyword_as_identifier_in_labels:
-	ANY
+keyword_as_identifier_in_labels
+    : ANY
 	| PROTOCOL_CAPITAL
 	| SELF_CAPITAL
 	| TYPE_CAPITAL
