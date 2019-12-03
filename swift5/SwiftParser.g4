@@ -325,8 +325,7 @@ declaration
 	| typealias_declaration
 	| function_declaration
 	| enum_declaration
-	| struct_declaration
-	| class_declaration
+	| class_or_struct_declaration
 	| protocol_declaration
 	| initializer_declaration
 	| deinitializer_declaration
@@ -511,35 +510,21 @@ raw_value_assignment : assignment_operator raw_value_literal;
 
 raw_value_literal : numeric_literal | Static_string_literal | booleanLiteral;
 
-// GRAMMAR OF A STRUCTURE DECLARATION TODO did not update
 
-struct_declaration:
-	attributes? access_level_modifier? 'struct' struct_name generic_parameter_clause? type_inheritance_clause?
-		generic_where_clause? struct_body
-	;
-struct_name	:	declaration_identifier;
-struct_body	:	'{' struct_member* '}';
+// GRAMMAR OF A CLASS AND STRUCT DECLARATIONS
 
-struct_member : declaration | compiler_control_statement;
-
-// GRAMMAR OF A CLASS DECLARATION
-
-class_declaration:
-	attributes? access_level_modifier? 'final'? 'class' class_name generic_parameter_clause? type_inheritance_clause?
+class_or_struct_declaration
+    : attributes? access_level_modifier? ('final'? 'class' | 'struct') declaration_identifier generic_parameter_clause? type_inheritance_clause?
 		generic_where_clause? class_body
-	| attributes? access_level_modifier? 'final' access_level_modifier? 'class' class_name generic_parameter_clause?
+	| attributes? access_level_modifier? 'final' access_level_modifier? 'class' declaration_identifier generic_parameter_clause?
 		type_inheritance_clause? generic_where_clause? class_body
 	;
-class_name	:	declaration_identifier;
-class_body	:	'{' class_member* '}';
 
-class_member : declaration | compiler_control_statement;
+class_body	: '{' (declaration | compiler_control_statement)* '}';
 
 // GRAMMAR OF A PROTOCOL DECLARATION
 
-protocol_declaration:
-	attributes? access_level_modifier? 'protocol' protocol_name type_inheritance_clause? protocol_body
-	;
+protocol_declaration : attributes? access_level_modifier? 'protocol' protocol_name type_inheritance_clause? protocol_body;
 protocol_name	:	declaration_identifier;
 protocol_body	:	'{' protocol_member* '}';
 
@@ -1097,18 +1082,11 @@ protocol_identifier			:	type_identifier;
 
 // GRAMMAR OF A TYPE INHERITANCE CLAUSE
 
-type_inheritance_clause:
-	':' class_requirement ',' type_inheritance_list
-	| ':' class_requirement
-	| ':' type_inheritance_list
+type_inheritance_clause
+    : ':' CLASS ',' type_identifier (',' type_identifier)*
+	| ':' CLASS
+	| ':' type_identifier (',' type_identifier)*
 	;
-
-type_inheritance_list:
-	type_identifier
-	| type_identifier ',' type_inheritance_list
-	;
-
-class_requirement : 'class';
 
 // ---------- Lexical Structure -----------
 
