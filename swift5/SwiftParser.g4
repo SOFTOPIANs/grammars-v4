@@ -433,7 +433,7 @@ function_signature : parameter_clause ('throws' | 'rethrows')? function_result?;
 
 function_result : arrow_operator attributes? type;
 
-parameter_clause	:	'(' (parameter (',' parameter)*)* ')';
+parameter_clause	:	'(' parameter? (',' parameter)* ')';
 
 parameter:
 	external_parameter_name? local_parameter_name type_annotation default_argument_clause?
