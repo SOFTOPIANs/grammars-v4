@@ -91,6 +91,7 @@ loop_statement:
 	;
 
 // GRAMMAR OF A FOR STATEMENT
+// Deprecated since Swift3
 
 for_statement:
 	FOR for_init? ';' expression? ';' expression? code_block
@@ -850,7 +851,7 @@ dictionary_literal : '[' dictionary_literal_items ']' | '[' ':' ']';
 
 dictionary_literal_items:
 	dictionary_literal_item ','?
-	| dictionary_literal_item ',' dictionary_literal_items
+	| dictionary_literal_item (',' dictionary_literal_item)*/
 	;
 
 dictionary_literal_item : expression ':' expression;
@@ -999,7 +1000,7 @@ function_call_argument
 
 // GRAMMAR OF AN EXPLICIT MEMBER EXPRESSION
 
-argument_names	:	argument_name (argument_name)*;
+argument_names	:	argument_name+;
 argument_name	:	label_identifier ':';
 
 // GRAMMAR OF A DYNAMIC TYPE EXPRESSION
