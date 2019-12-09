@@ -791,12 +791,10 @@ expression_list : expression (',' expression)*;
 // GRAMMAR OF A PREFIX EXPRESSION
 // Corresponds to the prefixExpr from the Swift spec
 
-prefix_expression_original:
-	prefix_operator? postfix_expression	
-	| in_out_expression
+prefix_expression_original
+    : prefix_operator? postfix_expression
+	| '&' declaration_identifier
 	;
-
-in_out_expression : '&' declaration_identifier;
 
 // GRAMMAR OF A BINARY EXPRESSION
 
@@ -951,7 +949,10 @@ selector_expression:
 
 // GRAMMAR OF A KEY-PATH EXPRESSION
 
-key_path_expression : '#keyPath' '(' expression ')';
+key_path_expression
+    : '#keyPath' '(' expression ')'
+	// | '\\' expression  // TODO: fixed failure with improper baclslash symbol generation
+	;
 
 // GRAMMAR OF A POSTFIX EXPRESSION (inlined many rules from spec to avoid indirect left-recursion)
 
@@ -963,8 +964,8 @@ postfix_expression:
 	| postfix_expression '.' 'init'												# initializer_expression
 	| postfix_expression '.' 'init' '(' argument_names ')'						# initializer_expression_with_args
 	| postfix_expression '.' PURE_DECIMAL_DIGITS								# explicit_member_expression1
-	| postfix_expression '.' declaration_identifier generic_argument_clause?	# explicit_member_expression2
-	| postfix_expression '.' declaration_identifier '(' argument_names ')'		# explicit_member_expression3
+	| postfix_expression '.' (declaration_identifier | label_identifier) generic_argument_clause?	# explicit_member_expression2
+	| postfix_expression '.' (declaration_identifier | label_identifier) '(' argument_names ')'		# explicit_member_expression3
 	// This does't exist in the swift grammar, but this valid swift statement fails without it self.addTarget(self,
 	// action: #selector(nameOfAction(_:)))
 	| postfix_expression '(' argument_names ')'		# explicit_member_expression4
