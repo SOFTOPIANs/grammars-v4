@@ -337,7 +337,25 @@ declaration
 	| precedence_group_declaration
 	;
 
-declarations : declaration+;
+class_or_struct_member_declaration
+    : import_declaration	
+	| typealias_declaration
+	| field_declaration
+	| function_declaration
+	| enum_declaration
+	| class_or_struct_declaration
+	| protocol_declaration
+	| initializer_declaration
+	| deinitializer_declaration
+	| extension_declaration
+	| subscript_declaration
+	| operator_declaration
+	| operator_declaration
+	| precedence_group_declaration
+	;
+
+field_declaration
+    : constant_declaration | variable_declaration;
 
 // GRAMMAR OF A TOP-LEVEL DECLARATION
 
@@ -521,7 +539,7 @@ class_or_struct_declaration
 		type_inheritance_clause? generic_where_clause? class_body
 	;
 
-class_body	: '{' (declaration | compiler_control_statement)* '}';
+class_body	: '{' (class_or_struct_member_declaration | compiler_control_statement)* '}';
 
 // GRAMMAR OF A PROTOCOL DECLARATION
 
@@ -554,10 +572,7 @@ protocol_method_declaration:
 
 // GRAMMAR OF A PROTOCOL INITIALIZER DECLARATION
 
-protocol_initializer_declaration:
-	initializer_head generic_parameter_clause? parameter_clause 'throws'? generic_where_clause?
-	| initializer_head generic_parameter_clause? parameter_clause 'rethrows' generic_where_clause?
-	;
+protocol_initializer_declaration: initializer_head generic_parameter_clause? parameter_clause ('throws' | 'rethrows')? generic_where_clause?;
 
 // GRAMMAR OF A PROTOCOL SUBSCRIPT DECLARATION
 
@@ -573,18 +588,13 @@ protocol_associated_type_declaration:
 
 // GRAMMAR OF AN INITIALIZER DECLARATION
 
-initializer_declaration:
-	initializer_head generic_parameter_clause? parameter_clause 'throws'? generic_where_clause? initializer_body
-	| initializer_head generic_parameter_clause? parameter_clause 'rethrows' generic_where_clause? initializer_body
-	;
+initializer_declaration: initializer_head generic_parameter_clause? parameter_clause ('throws' | 'rethrows')? generic_where_clause? code_block;
 
 initializer_head:
 	attributes? declaration_modifiers? 'init'
 	| attributes? declaration_modifiers? 'init' '?'
 	| attributes? declaration_modifiers? 'init' '!'
 	;
-
-initializer_body : code_block;
 
 // GRAMMAR OF A DEINITIALIZER DECLARATION
 
@@ -845,12 +855,7 @@ literal_expression
 
 array_literal : '[' expression_list? ','? ']';
 
-dictionary_literal : '[' dictionary_literal_items ']' | '[' ':' ']';
-
-dictionary_literal_items:
-	dictionary_literal_item ','?
-	| dictionary_literal_item (',' dictionary_literal_item)*/
-	;
+dictionary_literal : '[' dictionary_literal_item (',' dictionary_literal_item)* ','? ']' | '[' ':' ']';
 
 dictionary_literal_item : expression ':' expression;
 
