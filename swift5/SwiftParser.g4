@@ -532,14 +532,11 @@ class_body	: '{' (class_or_struct_member_declaration | compiler_control_statemen
 
 // GRAMMAR OF A PROTOCOL DECLARATION
 
-protocol_declaration : attributes? access_level_modifier? 'protocol' protocol_name type_inheritance_clause? protocol_body;
-protocol_name	:	declaration_identifier;
-protocol_body	:	'{' protocol_member* '}';
+protocol_declaration : attributes? access_level_modifier? 'protocol' declaration_identifier type_inheritance_clause? protocol_body;
+protocol_body	:	'{' (protocol_member_declaration | compiler_control_statement)* '}';
 
-protocol_member : protocol_member_declaration | compiler_control_statement;
-
-protocol_member_declaration:
-	protocol_property_declaration
+protocol_member_declaration
+    : protocol_property_declaration
 	| protocol_method_declaration
 	| protocol_initializer_declaration
 	| protocol_subscript_declaration
@@ -595,9 +592,8 @@ extension_declaration:
 	attributes? access_level_modifier? 'extension' type_identifier type_inheritance_clause? extension_body
 	| attributes? access_level_modifier? 'extension' type_identifier generic_where_clause extension_body
 	;
-extension_body : '{' extension_member* '}';
 
-extension_member : declaration | compiler_control_statement;
+extension_body : '{' (declaration | compiler_control_statement)* '}';
 
 // GRAMMAR OF A SUBSCRIPT DECLARATION
 
@@ -905,10 +901,18 @@ closure_parameter_clause:
 	| declaration_identifier (',' declaration_identifier)*
 	;
 
+
+// According to the Swift Book:
+// "The parameters have the same form as the parameters in a function declaration, as described in Function Declaration."
+// https://docs.swift.org/swift-book/ReferenceManual/Expressions.html#grammar_closure-expression
+
+closure_parameter: parameter;
+/*
 closure_parameter:
 	label_identifier type_annotation?
 	| label_identifier type_annotation range_operator
 	;
+*/
 
 capture_list : '[' capture_list_items ']';
 
@@ -953,8 +957,8 @@ key_path_expression
 postfix_expression:
 	primary_expression															# primary
 	| postfix_expression postfix_operator										# postfix_operation
-	| postfix_expression function_call_argument_clause							# function_call_expression
 	| postfix_expression function_call_argument_clause? closure_expression		# function_call_expression_with_closure
+	| postfix_expression function_call_argument_clause							# function_call_expression
 	| postfix_expression '.' 'init'												# initializer_expression
 	| postfix_expression '.' 'init' '(' argument_names ')'						# initializer_expression_with_args
 	| postfix_expression '.' PURE_DECIMAL_DIGITS								# explicit_member_expression1
@@ -1025,9 +1029,15 @@ type_annotation : ':' attributes? 'inout'? type;
 
 // GRAMMAR OF A TYPE IDENTIFIER
 
-type_identifier : type_name generic_argument_clause? ('.' type_identifier)?;
+type_identifier
+    : type_name generic_argument_clause?
+	| type_name generic_argument_clause? '.' type_identifier
+	;
 
-type_name : declaration_identifier;
+type_name
+    : declaration_identifier
+	| label_identifier
+	;
 
 // GRAMMAR OF A TUPLE TYPE
 
@@ -1079,9 +1089,8 @@ protocol_identifier			:	type_identifier;
 // GRAMMAR OF A TYPE INHERITANCE CLAUSE
 
 type_inheritance_clause
-    : ':' CLASS ',' type_identifier (',' type_identifier)*
+    : ':' (CLASS ',')? type_identifier (',' type_identifier)*
 	| ':' CLASS
-	| ':' type_identifier (',' type_identifier)*
 	;
 
 // ---------- Lexical Structure -----------
