@@ -73,7 +73,11 @@ statement: (
 		| guard_statement
 		| switch_statement
 		| labeled_statement
-		| control_transfer_statement
+		| break_statement
+		| continue_statement
+		| fallthrough_statement
+		| return_statement
+		| throw_statement
 		| defer_statement
 		| do_statement
 		| compiler_control_statement
@@ -156,33 +160,19 @@ where_expression	:	expression;
 
 // GRAMMAR OF A LABELED STATEMENT
 
-labeled_statement:
-	statement_label loop_statement
-	| statement_label if_statement
-	| statement_label switch_statement
-	| statement_label do_statement
-	;
-
-statement_label	:	label_name ':';
-label_name		:	declaration_identifier;
-
-// GRAMMAR OF A CONTROL TRANSFER STATEMENT
-
-control_transfer_statement:
-	break_statement
-	| continue_statement
-	| fallthrough_statement
-	| return_statement
-	| throw_statement
-	;
+labeled_statement : declaration_identifier ':'  ( loop_statement
+	                                            | if_statement
+	                                            | switch_statement
+	                                            | do_statement
+                                                );
 
 // GRAMMAR OF A BREAK STATEMENT
 
-break_statement : 'break' label_name?;
+break_statement : 'break' declaration_identifier?;
 
 // GRAMMAR OF A CONTINUE STATEMENT
 
-continue_statement : 'continue' label_name?;
+continue_statement : 'continue' declaration_identifier?;
 
 // GRAMMAR OF A FALLTHROUGH STATEMENT
 
@@ -201,8 +191,7 @@ defer_statement : 'defer' code_block;
 
 // GRAMMAR OF A DO STATEMENT
 
-do_statement	:	'do' code_block catch_clauses?;
-catch_clauses	:	catch_clause catch_clauses?;
+do_statement	:	'do' code_block catch_clause*;
 catch_clause	:	'catch' pattern? where_clause? code_block;
 
 // GRAMMAR OF A COMPILER CONTROL STATEMENT
