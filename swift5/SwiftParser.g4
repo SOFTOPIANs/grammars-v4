@@ -905,14 +905,13 @@ closure_parameter_clause:
 // According to the Swift Book:
 // "The parameters have the same form as the parameters in a function declaration, as described in Function Declaration."
 // https://docs.swift.org/swift-book/ReferenceManual/Expressions.html#grammar_closure-expression
+// Although, grammar rule from spec is different with function parameters and both of them
+// are incomplete. Mixed rule below is satisfying.
 
-closure_parameter: parameter;
-/*
-closure_parameter:
-	label_identifier type_annotation?
-	| label_identifier type_annotation range_operator
+closure_parameter
+    : external_parameter_name? label_identifier type_annotation? default_argument_clause?
+	| external_parameter_name? label_identifier type_annotation range_operator
 	;
-*/
 
 capture_list : '[' capture_list_items ']';
 
