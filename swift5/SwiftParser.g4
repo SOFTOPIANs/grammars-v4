@@ -507,10 +507,7 @@ raw_value_style_enum_case_clause:
 	attributes? 'case' raw_value_style_enum_case_list
 	;
 
-raw_value_style_enum_case_list:
-	raw_value_style_enum_case
-	| raw_value_style_enum_case ',' raw_value_style_enum_case_list
-	;
+raw_value_style_enum_case_list: raw_value_style_enum_case (',' raw_value_style_enum_case)*;
 
 raw_value_style_enum_case : enum_case_name raw_value_assignment?;
 
@@ -531,8 +528,9 @@ class_or_struct_declaration
 class_body	: '{' (class_or_struct_member_declaration | compiler_control_statement)* '}';
 
 // GRAMMAR OF A PROTOCOL DECLARATION
+// generic_where_clause has been erased since Swift 3
 
-protocol_declaration : attributes? access_level_modifier? 'protocol' declaration_identifier type_inheritance_clause? protocol_body;
+protocol_declaration : attributes? access_level_modifier? 'protocol' declaration_identifier type_inheritance_clause? generic_where_clause? protocol_body;
 protocol_body	:	'{' (protocol_member_declaration | compiler_control_statement)* '}';
 
 protocol_member_declaration
@@ -1007,8 +1005,8 @@ dynamic_type_expression : 'type' '(' 'of' ':' expression ')';
 
 // GRAMMAR OF A TYPE
 
-type:
-	array_type					# the_array_type
+type
+    : array_type				# the_array_type
 	| dictionary_type			# the_dictionary_type
 	| function_type				# the_function_type
 	| type_identifier			# the_type_identifier
@@ -1029,8 +1027,8 @@ type_annotation : ':' attributes? 'inout'? type;
 // GRAMMAR OF A TYPE IDENTIFIER
 
 type_identifier
-    : type_name generic_argument_clause?
-	| type_name generic_argument_clause? '.' type_identifier
+    : type_name generic_argument_clause? '.' type_identifier
+	| type_name generic_argument_clause?
 	;
 
 type_name
