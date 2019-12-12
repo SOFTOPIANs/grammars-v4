@@ -525,13 +525,13 @@ class_or_struct_declaration
 		type_inheritance_clause? generic_where_clause? class_body
 	;
 
-class_body	: '{' (class_or_struct_member_declaration | compiler_control_statement)* '}';
+class_body	: '{' ((class_or_struct_member_declaration | compiler_control_statement) SEMI?)* '}';
 
 // GRAMMAR OF A PROTOCOL DECLARATION
 // generic_where_clause has been erased since Swift 3
 
 protocol_declaration : attributes? access_level_modifier? 'protocol' declaration_identifier type_inheritance_clause? generic_where_clause? protocol_body;
-protocol_body	:	'{' (protocol_member_declaration | compiler_control_statement)* '}';
+protocol_body	:	'{' ((protocol_member_declaration | compiler_control_statement) SEMI?)* '}';
 
 protocol_member_declaration
     : protocol_property_declaration
