@@ -257,9 +257,9 @@ NIL_LIT : 'nil';
 
 //RAW_STRING_LIT :  '"' ESCAPED_VALUE* '"';
 
-Interpolated_string_literal : '"' Interpolated_text_item* '"';
-
 Static_string_literal : '"' ESCAPED_VALUE* '"';
+
+Interpolated_string_literal : '"' Interpolated_text_item* '"';
 
 Platform_name_platform_version : Platform_name WS Platform_version;
 
