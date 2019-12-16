@@ -289,12 +289,21 @@ Implicit_parameter_name : '$' DECIMAL_LIT;
 
 DOUBLE_QUOTE: '"' -> pushMode(InterpolationString);
 
+TRIPLE_QUOTE: '"""' -> pushMode(Multiline);
+
 mode InterpolationString;
 
 INTERPOLATION_EXPRESSION: '\\(' { this.SetInsideString(); } -> channel(HIDDEN), pushMode(DEFAULT_MODE);
-ESCAPED_QUOTE: '\\"' ->type(STRING_PART);
-CLOSE_EXPR: '"' -> type(DOUBLE_QUOTE), popMode;
+CLOSE_STRING: '"' -> type(DOUBLE_QUOTE), popMode;
 STRING_PART: ESCAPED_VALUE+;
+
+mode Multiline;
+MULTILINE_INTERPOLATION_EXPRESSION: '\\(' { this.SetInsideString(); } -> channel(HIDDEN), pushMode(DEFAULT_MODE);
+ESCAPED_BACKSLASH: '\\' -> type(MULTILINE_PART);
+ESCAPED_TRIPLE_QUOTE: '\\"""' -> type(MULTILINE_PART);
+TRIPLE_QUOTE_CLOSE: QUOTE? '"""' -> type(TRIPLE_QUOTE), popMode;
+QUOTE : '"'+ -> type(MULTILINE_PART);
+MULTILINE_PART: (ESCAPED_VALUE | '\n' | '\r' | '\t')+;
 
 // Fragments
 

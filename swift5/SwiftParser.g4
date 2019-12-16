@@ -1161,19 +1161,30 @@ booleanLiteral: TRUE | FALSE;
 // TODO : Fix predicate for correct processing for negative numbers
 numeric_literal : SUB? (integer | FLOAT_LIT);
 
-// TODO: Add multiline string support
+// TODO: Support strings with balanced tokens
 
 string_literal
     : static_string_literal
     | DOUBLE_QUOTE string_literal_content* DOUBLE_QUOTE
+	| TRIPLE_QUOTE multiString_content* TRIPLE_QUOTE
     ;
 
-static_string_literal: DOUBLE_QUOTE stringPartParserRule* DOUBLE_QUOTE;
+static_string_literal
+    : DOUBLE_QUOTE stringPartParserRule* DOUBLE_QUOTE
+	| TRIPLE_QUOTE multiStringPartParserRule* TRIPLE_QUOTE
+	;
 
 stringPartParserRule: STRING_PART;
 
 string_literal_content
     : STRING_PART
+	| expression
+	;
+
+multiStringPartParserRule: MULTILINE_PART;
+
+multiString_content
+    : MULTILINE_PART
 	| expression
 	;
 
