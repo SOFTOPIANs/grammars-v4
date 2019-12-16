@@ -44,6 +44,8 @@
 
 lexer grammar SwiftLexer;
 
+options{ superClass=SwiftBaseLexer; }
+
 // Tested all alphanumeric tokens in playground.
 // E.g. "let mutating = 1".
 // E.g. "func mutating() {}".
@@ -193,10 +195,10 @@ FALSE	:	'false';
 
 DOT			:	'.';
 LCURLY		:	'{';
-LPAREN		:	'(';
+LPAREN		:	'(' { this.CheckIfInsideInterpolatedExpression(); };
 LBRACK		:	'[';
 RCURLY		:	'}';
-RPAREN		:	')';
+RPAREN		:	')' { this.PopModeOnInterpolatedExpressionClose(); };
 RBRACK		:	']';
 COMMA		:	',';
 COLON		:	':';
@@ -255,12 +257,6 @@ FLOAT_LIT:
 
 NIL_LIT : 'nil';
 
-//RAW_STRING_LIT :  '"' ESCAPED_VALUE* '"';
-
-Static_string_literal : '"' ESCAPED_VALUE* '"';
-
-Interpolated_string_literal : '"' Interpolated_text_item* '"';
-
 Platform_name_platform_version : Platform_name WS Platform_version;
 
 Operator_head_other: // valid operator chars not used by Swift itself
@@ -291,12 +287,16 @@ Operator_following_character:
 
 Implicit_parameter_name : '$' DECIMAL_LIT;
 
-// Fragments
+DOUBLE_QUOTE: '"' -> pushMode(InterpolationString);
 
-fragment Interpolated_text_item:
-	'\\(' (Interpolated_string_literal | Interpolated_text_item)+ ')' // nested strings allowed
-	| ESCAPED_VALUE
-	;
+mode InterpolationString;
+
+INTERPOLATION_EXPRESSION: '\\(' { this.SetInsideString(); } -> channel(HIDDEN), pushMode(DEFAULT_MODE);
+ESCAPED_QUOTE: '\\"' ->type(STRING_PART);
+CLOSE_EXPR: '"' -> type(DOUBLE_QUOTE), popMode;
+STRING_PART: ESCAPED_VALUE+;
+
+// Fragments
 
 fragment Platform_name:
 	'iOS'

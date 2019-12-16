@@ -99,7 +99,7 @@ loop_statement:
 
 for_statement:
 	FOR for_init? ';' expression? ';' expression? code_block
-	| FOR '(' for_init? ';' expression? ';' expression? ')' code_block
+	| FOR LPAREN for_init? ';' expression? ';' expression? ')' code_block
 	;
 
 for_init : variable_declaration | expression_list;
@@ -222,16 +222,16 @@ compilation_condition:
 	platform_condition
 	| label_identifier
 	| booleanLiteral
-	| '(' compilation_condition ')'
+	| LPAREN compilation_condition ')'
 	| '!' compilation_condition
 	| compilation_condition compilation_condition_AND compilation_condition
 	| compilation_condition compilation_condition_OR compilation_condition
 	;
 
 platform_condition:
-	'os' '(' operating_system ')'
-	| 'arch' '(' architecture ')'
-	| 'swift' '(' compilation_condition_GE swift_version ')'
+	'os' LPAREN operating_system ')'
+	| 'arch' LPAREN architecture ')'
+	| 'swift' LPAREN compilation_condition_GE swift_version ')'
 	;
 
 swift_version : DECIMAL_LIT '.' DECIMAL_LIT;
@@ -251,7 +251,7 @@ architecture		:	declaration_identifier;
 
 // NOTE: The rule is changed. Original rule:
 //
-// line_control_statement : '#sourceLocation' '(' 'file:' file_name ',' 'line:' line_number ')' | '#sourceLocation' '('
+// line_control_statement : '#sourceLocation' LPAREN 'file:' file_name ',' 'line:' line_number ')' | '#sourceLocation' LPAREN
 // ')' ;
 //
 // This defines a token "file:", but this is valid for swift compiler: '#sourceLocation(file : "", line : 1)' (notice
@@ -259,17 +259,17 @@ architecture		:	declaration_identifier;
 //
 // Modified rule:
 line_control_statement:
-	'#sourceLocation' '(' 'file' ':' file_name ',' 'line' ':' line_number ')'
-	| '#sourceLocation' '(' ')'
+	'#sourceLocation' LPAREN 'file' ':' file_name ',' 'line' ':' line_number ')'
+	| '#sourceLocation' LPAREN ')'
 	;
 
 line_number : integer;
 // TODO: A decimal integer greater than zero
-file_name : Static_string_literal;
+file_name : static_string_literal;
 
 // GRAMMAR OF AN AVAILABILITY CONDITION
 
-availability_condition : '#available' '(' availability_arguments ')';
+availability_condition : '#available' LPAREN availability_arguments ')';
 
 availability_arguments : availability_argument (',' availability_argument)*;
 
@@ -404,7 +404,7 @@ getter_setter_block:
 	;
 getter_clause	:	attributes? mutation_modifier? 'get' code_block;
 setter_clause	:	attributes? mutation_modifier? 'set' setter_name? code_block;
-setter_name		:	'(' declaration_identifier ')';
+setter_name		:	LPAREN declaration_identifier ')';
 
 getter_setter_keyword_block:
 	'{' getter_keyword_clause setter_keyword_clause? '}'
@@ -441,7 +441,7 @@ function_signature : parameter_clause ('throws' | 'rethrows')? function_result?;
 
 function_result : arrow_operator attributes? type;
 
-parameter_clause	:	'(' parameter? (',' parameter)* ')';
+parameter_clause	:	LPAREN parameter? (',' parameter)* ')';
 
 parameter:
 	external_parameter_name? local_parameter_name type_annotation default_argument_clause?
@@ -513,8 +513,7 @@ raw_value_style_enum_case : enum_case_name raw_value_assignment?;
 
 raw_value_assignment : assignment_operator raw_value_literal;
 
-raw_value_literal : numeric_literal | Static_string_literal | booleanLiteral;
-
+raw_value_literal : numeric_literal | static_string_literal | booleanLiteral;
 
 // GRAMMAR OF A CLASS AND STRUCT DECLARATIONS
 
@@ -660,8 +659,8 @@ declaration_modifier:
 	| 'required'
 	| 'static'
 	| 'unowned'
-	| 'unowned' '(' 'safe' ')'
-	| 'unowned' '(' 'unsafe' ')'
+	| 'unowned' LPAREN 'safe' ')'
+	| 'unowned' LPAREN 'unsafe' ')'
 	| 'weak'
 	| access_level_modifier
 	| mutation_modifier
@@ -671,15 +670,15 @@ declaration_modifiers : declaration_modifier+;
 
 access_level_modifier:
 	'private'
-	| 'private' '(' 'set' ')'
+	| 'private' LPAREN 'set' ')'
 	| 'fileprivate'
-	| 'fileprivate' '(' 'set' ')'
+	| 'fileprivate' LPAREN 'set' ')'
 	| 'internal'
-	| 'internal' '(' 'set' ')'
+	| 'internal' LPAREN 'set' ')'
 	| 'public'
-	| 'public' '(' 'set' ')'
+	| 'public' LPAREN 'set' ')'
 	| 'open'
-	| 'open' '(' 'set' ')'
+	| 'open' LPAREN 'set' ')'
 	;
 
 mutation_modifier : 'mutating' | 'nonmutating';
@@ -710,7 +709,7 @@ value_binding_pattern : 'var' pattern | 'let' pattern;
 
 // GRAMMAR OF A TUPLE PATTERN
 
-tuple_pattern : '(' tuple_pattern_element_list? ')';
+tuple_pattern : LPAREN tuple_pattern_element_list? ')';
 tuple_pattern_element_list:
 	tuple_pattern_element (',' tuple_pattern_element)*
 	;
@@ -738,7 +737,7 @@ expression_pattern : expression;
 
 attribute					:	'@' attribute_name attribute_argument_clause?;
 attribute_name				:	declaration_identifier;
-attribute_argument_clause	:	'(' balanced_tokens ')';
+attribute_argument_clause	:	LPAREN balanced_tokens ')';
 attributes					:	attribute+;
 balanced_tokens				:	balanced_token*;
 
@@ -751,7 +750,7 @@ balanced_tokens				:	balanced_token*;
 // Example: @available(*, deprecated, message: "it will be removed in Swift 4.0. Please use 'Collection' instead") Apple
 // doesn't provide proper grammar for attributes. It says "Any punctuation except (­, )­, [­, ]­, {­, or }­".
 balanced_token:
-	'(' balanced_tokens ')'
+	LPAREN balanced_tokens ')'
 	| '[' balanced_tokens ']'
 	| '{' balanced_tokens '}'
 	| label_identifier
@@ -843,10 +842,10 @@ dictionary_literal : '[' dictionary_literal_item (',' dictionary_literal_item)* 
 dictionary_literal_item : expression ':' expression;
 
 playground_literal:
-	'#colorLiteral' '(' 'red' ':' expression ',' 'green' ':' expression ',' 'blue' ':' expression ',' 'alpha' ':'
+	'#colorLiteral' LPAREN 'red' ':' expression ',' 'green' ':' expression ',' 'blue' ':' expression ',' 'alpha' ':'
 		expression ')'
-	| '#fileLiteral' '(' 'resourceName' ':' expression ')'
-	| '#imageLiteral' '(' 'resourceName' ':' expression ')'
+	| '#fileLiteral' LPAREN 'resourceName' ':' expression ')'
+	| '#imageLiteral' LPAREN 'resourceName' ':' expression ')'
 	;
 
 // GRAMMAR OF A SELF EXPRESSION
@@ -894,8 +893,8 @@ closure_signature:
 	;
 
 closure_parameter_clause:
-	'(' ')'
-	| '(' closure_parameter (',' closure_parameter)* ')'
+	LPAREN ')'
+	| LPAREN closure_parameter (',' closure_parameter)* ')'
 	| declaration_identifier (',' declaration_identifier)*
 	;
 
@@ -926,26 +925,26 @@ implicit_member_expression : '.' label_identifier;
 
 // GRAMMAR OF A PARENTHESIZED EXPRESSION
 
-parenthesized_expression : '(' expression ')';
+parenthesized_expression : LPAREN expression ')';
 
 // GRAMMAR OF A TUPLE EXPRESSION
 
-tuple_expression : '(' ')' | '(' tuple_element (',' tuple_element)+ ')';
+tuple_expression : LPAREN ')' | LPAREN tuple_element (',' tuple_element)+ ')';
 
 tuple_element : expression | label_identifier ':' expression;
 
 // GRAMMAR OF A SELECTOR EXPRESSION
 
 selector_expression:
-	'#selector' '(' expression ')'
-	| '#selector' '(' 'getter:' expression ')'
-	| '#selector' '(' 'setter:' expression ')'
+	'#selector' LPAREN expression ')'
+	| '#selector' LPAREN 'getter:' expression ')'
+	| '#selector' LPAREN 'setter:' expression ')'
 	;
 
 // GRAMMAR OF A KEY-PATH EXPRESSION
 
 key_path_expression
-    : '#keyPath' '(' expression ')'
+    : '#keyPath' LPAREN expression ')'
 	// | '\\' expression  // TODO: fixed failure with improper baclslash symbol generation
 	;
 
@@ -957,13 +956,13 @@ postfix_expression:
 	| postfix_expression function_call_argument_clause? closure_expression		# function_call_expression_with_closure
 	| postfix_expression function_call_argument_clause							# function_call_expression
 	| postfix_expression '.' 'init'												# initializer_expression
-	| postfix_expression '.' 'init' '(' argument_names ')'						# initializer_expression_with_args
+	| postfix_expression '.' 'init' LPAREN argument_names ')'						# initializer_expression_with_args
 	| postfix_expression '.' PURE_DECIMAL_DIGITS								# explicit_member_expression1
 	| postfix_expression '.' (declaration_identifier | label_identifier) generic_argument_clause?	# explicit_member_expression2
-	| postfix_expression '.' (declaration_identifier | label_identifier) '(' argument_names ')'		# explicit_member_expression3
+	| postfix_expression '.' (declaration_identifier | label_identifier) LPAREN argument_names ')'		# explicit_member_expression3
 	// This does't exist in the swift grammar, but this valid swift statement fails without it self.addTarget(self,
 	// action: #selector(nameOfAction(_:)))
-	| postfix_expression '(' argument_names ')'		# explicit_member_expression4
+	| postfix_expression LPAREN argument_names ')'		# explicit_member_expression4
 	| postfix_expression '.' 'self'					# postfix_self_expression
 	| dynamic_type_expression						# dynamic_type
 	| postfix_expression '[' expression_list ']'	# subscript_expression
@@ -979,14 +978,14 @@ postfix_expression:
 // postfix-expression­ function-call-argument-clause­?­ trailing-closure
 
 /*
-function_call_argument_clause : '(' function_call_argument_list? ')';
+function_call_argument_clause : LPAREN function_call_argument_list? ')';
 
 function_call_argument_list:
 	function_call_argument (',' function_call_argument)*
 	;
 */
 
-function_call_argument_clause : '(' function_call_argument? (',' function_call_argument)* ')';
+function_call_argument_clause : LPAREN function_call_argument? (',' function_call_argument)* ')';
 
 function_call_argument
     : expression
@@ -1001,7 +1000,7 @@ argument_name	:	label_identifier ':';
 
 // GRAMMAR OF A DYNAMIC TYPE EXPRESSION
 
-dynamic_type_expression : 'type' '(' 'of' ':' expression ')';
+dynamic_type_expression : 'type' LPAREN 'of' ':' expression ')';
 
 // GRAMMAR OF A TYPE
 
@@ -1038,7 +1037,7 @@ type_name
 
 // GRAMMAR OF A TUPLE TYPE
 
-tuple_type : '(' tuple_type_element_list? ')';
+tuple_type : LPAREN tuple_type_element_list? ')';
 tuple_type_element_list:
 	tuple_type_element
 	| tuple_type_element ',' tuple_type_element_list
@@ -1048,7 +1047,7 @@ element_name		:	label_identifier;
 
 // GRAMMAR OF A FUNCTION TYPE
 
-function_type: attributes? '(' function_type_argument? (',' function_type_argument)* range_operator? ')' (THROWS | RETHROWS)? arrow_operator type;
+function_type: attributes? LPAREN function_type_argument? (',' function_type_argument)* range_operator? ')' (THROWS | RETHROWS)? arrow_operator type;
 
 function_type_argument:
 	attributes? 'inout'? type
@@ -1163,8 +1162,20 @@ booleanLiteral: TRUE | FALSE;
 numeric_literal : SUB? (integer | FLOAT_LIT);
 
 // TODO: Add multiline string support
-//string : RAW_STRING_LIT;
-string_literal : Static_string_literal | Interpolated_string_literal;
+
+string_literal
+    : static_string_literal
+    | DOUBLE_QUOTE string_literal_content* DOUBLE_QUOTE
+    ;
+
+static_string_literal: DOUBLE_QUOTE stringPartParserRule* DOUBLE_QUOTE;
+
+stringPartParserRule: STRING_PART;
+
+string_literal_content
+    : STRING_PART
+	| expression
+	;
 
 eos : ';' | EOF;
 
