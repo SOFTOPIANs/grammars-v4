@@ -966,6 +966,7 @@ postfix_expression:
 	| postfix_expression '.' 'self'					# postfix_self_expression
 	| dynamic_type_expression						# dynamic_type
 	| postfix_expression '[' expression_list ']'	# subscript_expression
+	// postfix_expression ('!' | '?')                # forced_value_expression
 	// ! is a postfix operator already | postfix_expression '!' # forced_value_expression ? is a postfix operator
 	// already | postfix_expression '?' # optional_chaining_expression
 	;
@@ -1227,6 +1228,7 @@ keyword_as_identifier_in_declarations:
 	| OPEN
 	| OPTIONAL
 	| OS
+	| OSX
 	| OVERRIDE
 	| POSTFIX
 	| PRECEDENCE

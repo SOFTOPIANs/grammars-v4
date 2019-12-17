@@ -81,6 +81,7 @@ LEFT						:	'left';
 LINE						:	'line';
 LOWERTHAN					:	'lowerThan';
 MACOS						:	'macOS';
+OSX                         :   'OSX';
 MACOSAPPLICATIONEXTENSION	:	'macOSApplicationExtension';
 MUTATING					:	'mutating';
 NONE						:	'none';
@@ -307,13 +308,14 @@ MULTILINE_PART: (ESCAPED_VALUE | '\n' | '\r' | '\t')+;
 
 // Fragments
 
-fragment Platform_name:
-	'iOS'
+fragment Platform_name
+    : 'iOS'
 	| 'iOSApplicationExtension'
 	| 'macOS'
 	| 'macOSApplicationExtension'
 	| 'watchOS'
 	| 'tvOS'
+	| 'OSX'
 	;
 
 fragment Platform_version:
