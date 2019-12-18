@@ -1163,6 +1163,7 @@ booleanLiteral: TRUE | FALSE;
 numeric_literal : SUB? (integer | FLOAT_LIT);
 
 // TODO: Support strings with balanced tokens
+// TODO: Try to glue a few *STRING_PART before ParseTree consuming
 
 string_literal
     : static_string_literal
@@ -1171,21 +1172,17 @@ string_literal
     ;
 
 static_string_literal
-    : DOUBLE_QUOTE stringPartParserRule* DOUBLE_QUOTE
-	| TRIPLE_QUOTE multiStringPartParserRule* TRIPLE_QUOTE
+    : DOUBLE_QUOTE STRING_PART* DOUBLE_QUOTE
+	| TRIPLE_QUOTE MULTILINE_PART* TRIPLE_QUOTE
 	;
 
-stringPartParserRule: STRING_PART;
-
 string_literal_content
-    : STRING_PART
+    : STRING_PART+
 	| expression
 	;
 
-multiStringPartParserRule: MULTILINE_PART;
-
 multiString_content
-    : MULTILINE_PART
+    : MULTILINE_PART+
 	| expression
 	;
 
