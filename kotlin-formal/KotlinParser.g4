@@ -1,5 +1,5 @@
 /**
- * Kotlin syntax grammar in ANTLR4 notation 
+ * Kotlin syntax grammar in ANTLR4 notation
  * based on https://github.com/Kotlin/kotlin-spec/tree/master/grammar/src/main/antlr
  */
 
@@ -419,11 +419,13 @@ rangeExpression
     ;
 
 additiveExpression
-    : multiplicativeExpression (additiveOperator NL* multiplicativeExpression)*
+    : multiplicativeExpression
+    | additiveExpression additiveOperator NL* additiveExpression
     ;
 
 multiplicativeExpression
-    : asExpression (multiplicativeOperator NL* asExpression)*
+    : asExpression
+    | multiplicativeExpression multiplicativeOperator NL* multiplicativeExpression
     ;
 
 asExpression
@@ -621,7 +623,7 @@ superExpression
     ;
 
 ifExpression
-    :ifStatement 
+    :ifStatement
      elseIfStatement*
      elseStatement?
     ;
