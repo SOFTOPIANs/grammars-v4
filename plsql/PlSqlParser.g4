@@ -104,15 +104,15 @@ unit_statement
 // Function DDLs
 
 drop_function
-    : DROP FUNCTION function_name ';'
+    : DROP FUNCTION dotted_name ';'
     ;
 
 alter_function
-    : ALTER FUNCTION function_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
+    : ALTER FUNCTION dotted_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
     ;
 
 create_function_body
-    : CREATE (OR REPLACE)? FUNCTION function_name ('(' (','? parameter)+ ')')?
+    : CREATE (OR REPLACE)? FUNCTION dotted_name ('(' (','? parameter)+ ')')?
       RETURN type_spec (invoker_rights_clause | parallel_enable_clause | result_cache_clause | DETERMINISTIC)*
       ((PIPELINED? (IS | AS) (DECLARE? seq_of_declare_specs? body | call_spec)) | (PIPELINED | AGGREGATE) USING implementation_type_name) ';'
     ;
@@ -142,19 +142,19 @@ streaming_clause
 // Package DDLs
 
 drop_package
-    : DROP PACKAGE BODY? (schema_object_name '.')? package_name ';'
+    : DROP PACKAGE BODY? (id_expression '.')? identifier ';'
     ;
 
 alter_package
-    : ALTER PACKAGE package_name COMPILE DEBUG? (PACKAGE | BODY | SPECIFICATION)? compiler_parameters_clause* (REUSE SETTINGS)? ';'
+    : ALTER PACKAGE identifier COMPILE DEBUG? (PACKAGE | BODY | SPECIFICATION)? compiler_parameters_clause* (REUSE SETTINGS)? ';'
     ;
 
 create_package
-    : CREATE (OR REPLACE)? PACKAGE (schema_object_name '.')? package_name invoker_rights_clause? (IS | AS) package_obj_spec* END package_name? ';'
+    : CREATE (OR REPLACE)? PACKAGE (id_expression '.')? identifier invoker_rights_clause? (IS | AS) package_obj_spec* END identifier? ';'
     ;
 
 create_package_body
-    : CREATE (OR REPLACE)? PACKAGE BODY (schema_object_name '.')? package_name (IS | AS) package_obj_body* (BEGIN seq_of_statements)? END package_name? ';'
+    : CREATE (OR REPLACE)? PACKAGE BODY (id_expression '.')? identifier (IS | AS) package_obj_body* (BEGIN? seq_of_statements)? END identifier? ';'
     ;
 
 // Create Package Specific Clauses
@@ -194,11 +194,11 @@ package_obj_body
 // Procedure DDLs
 
 drop_procedure
-    : DROP PROCEDURE procedure_name ';'
+    : DROP PROCEDURE dotted_name ';'
     ;
 
 alter_procedure
-    : ALTER PROCEDURE procedure_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
+    : ALTER PROCEDURE dotted_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
     ;
 
 function_body
@@ -213,7 +213,7 @@ procedure_body
     ;
 
 create_procedure_body
-    : CREATE (OR REPLACE)? PROCEDURE procedure_name ('(' parameter (',' parameter)* ')')?
+    : CREATE (OR REPLACE)? PROCEDURE dotted_name ('(' parameter (',' parameter)* ')')?
       invoker_rights_clause? (IS | AS)
       (DECLARE? seq_of_declare_specs? body | call_spec | EXTERNAL) ';'
     ;
@@ -221,22 +221,22 @@ create_procedure_body
 // Trigger DDLs
 
 drop_trigger
-    : DROP TRIGGER trigger_name ';'
+    : DROP TRIGGER dotted_name ';'
     ;
 
 alter_trigger
-    : ALTER TRIGGER alter_trigger_name=trigger_name
-      ((ENABLE | DISABLE) | RENAME TO rename_trigger_name=trigger_name | COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)?) ';'
+    : ALTER TRIGGER alter_trigger_name=dotted_name
+      ((ENABLE | DISABLE) | RENAME TO rename_trigger_name=dotted_name | COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)?) ';'
     ;
 
 create_trigger
-    : CREATE ( OR REPLACE )? TRIGGER trigger_name
+    : CREATE ( OR REPLACE )? TRIGGER dotted_name
       (simple_dml_trigger | compound_dml_trigger | non_dml_trigger)
       trigger_follows_clause? (ENABLE | DISABLE)? trigger_when_clause? trigger_body ';'
     ;
 
 trigger_follows_clause
-    : FOLLOWS trigger_name (',' trigger_name)*
+    : FOLLOWS dotted_name (',' dotted_name)*
     ;
 
 trigger_when_clause
@@ -258,7 +258,7 @@ compound_dml_trigger
     ;
 
 non_dml_trigger
-    : (BEFORE | AFTER) non_dml_event (OR non_dml_event)* ON (DATABASE | (schema_name '.')? SCHEMA)
+    : (BEFORE | AFTER) non_dml_event (OR non_dml_event)* ON (DATABASE | (identifier '.')? SCHEMA)
     ;
 
 trigger_body
@@ -272,7 +272,7 @@ routine_clause
     ;
 
 compound_trigger_block
-    : COMPOUND TRIGGER seq_of_declare_specs? timing_point_section+ END trigger_name
+    : COMPOUND TRIGGER seq_of_declare_specs? timing_point_section+ END dotted_name
     ;
 
 timing_point_section
@@ -332,11 +332,11 @@ referencing_element
 // DDLs
 
 drop_type
-    : DROP TYPE BODY? type_name (FORCE | VALIDATE)? ';'
+    : DROP TYPE BODY? dotted_id_expression (FORCE | VALIDATE)? ';'
     ;
 
 alter_type
-    : ALTER TYPE type_name
+    : ALTER TYPE dotted_id_expression
     (compile_type_clause
     | replace_type_clause
     //TODO | {input.LT(2).getText().equalsIgnoreCase("attribute")}? alter_attribute_definition
@@ -370,7 +370,7 @@ alter_attribute_definition
     ;
 
 attribute_definition
-    : attribute_name type_spec?
+    : identifier type_spec?
     ;
 
 alter_collection_clauses
@@ -393,7 +393,7 @@ create_type
 // Create Type Specific Clauses
 
 type_definition
-    : type_name (OID CHAR_STRING)? object_type_def?
+    : dotted_id_expression (OID CHAR_STRING)? object_type_def?
     ;
 
 object_type_def
@@ -418,7 +418,7 @@ sqlj_object_type
     ;
 
 type_body
-    : BODY type_name (IS | AS) (type_body_elements)+ END
+    : BODY dotted_id_expression (IS | AS) (type_body_elements)+ END
     ;
 
 type_body_elements
@@ -436,12 +436,12 @@ subprog_decl_in_type
     ;
 
 proc_decl_in_type
-    : PROCEDURE procedure_name '(' type_elements_parameter (',' type_elements_parameter)* ')'
+    : PROCEDURE dotted_name '(' type_elements_parameter (',' type_elements_parameter)* ')'
       (IS | AS) (call_spec | DECLARE? seq_of_declare_specs? body ';')
     ;
 
 func_decl_in_type
-    : FUNCTION function_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
+    : FUNCTION dotted_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
       RETURN type_spec (IS | AS) (call_spec | DECLARE? seq_of_declare_specs? body ';')
     ;
 
@@ -486,17 +486,17 @@ overriding_subprogram_spec
     ;
 
 overriding_function_spec
-    : FUNCTION function_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
+    : FUNCTION dotted_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
       RETURN (type_spec | SELF AS RESULT)
      (PIPELINED? (IS | AS) (DECLARE? seq_of_declare_specs? body))? ';'?
     ;
 
 type_procedure_spec
-    : PROCEDURE procedure_name '(' type_elements_parameter (',' type_elements_parameter)* ')' ((IS | AS) call_spec)?
+    : PROCEDURE dotted_name '(' type_elements_parameter (',' type_elements_parameter)* ')' ((IS | AS) call_spec)?
     ;
 
 type_function_spec
-    : FUNCTION function_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
+    : FUNCTION dotted_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
       RETURN (type_spec | SELF AS RESULT) ((IS | AS) call_spec | EXTERNAL VARIABLE? NAME expression)?
     ;
 
@@ -520,36 +520,36 @@ pragma_elements
     ;
 
 type_elements_parameter
-    : parameter_name type_spec
+    : identifier type_spec
     ;
 
 // Sequence DDLs
 
 drop_sequence
-    : DROP SEQUENCE sequence_name ';'
+    : DROP SEQUENCE dotted_id_expression ';'
     ;
 
 alter_sequence
-    : ALTER SEQUENCE sequence_name sequence_spec+ ';'
+    : ALTER SEQUENCE dotted_id_expression sequence_spec+ ';'
     ;
 
 alter_session
     : ALTER SESSION (
         ADVISE ( COMMIT | ROLLBACK | NOTHING )
-        | CLOSE DATABASE LINK parameter_name
+        | CLOSE DATABASE LINK identifier
         | enable_or_disable COMMIT IN PROCEDURE
         | enable_or_disable GUARD
-        | (enable_or_disable | FORCE) PARALLEL (DML | DDL | QUERY) (PARALLEL (literal | parameter_name))?
+        | (enable_or_disable | FORCE) PARALLEL (DML | DDL | QUERY) (PARALLEL (literal | identifier))?
         | SET alter_session_set_clause
     )
     ;
 
 alter_session_set_clause
-    : parameter_name '=' parameter_value
+    : identifier '=' parameter_value
     ;
 
 create_sequence
-    : CREATE SEQUENCE sequence_name (sequence_start_clause | sequence_spec)* ';'
+    : CREATE SEQUENCE dotted_id_expression (sequence_start_clause | sequence_spec)* ';'
     ;
 
 // Common Sequence
@@ -573,7 +573,7 @@ sequence_start_clause
     ;
 
 create_index
-    : CREATE (UNIQUE | BITMAP)? INDEX index_name
+    : CREATE (UNIQUE | BITMAP)? INDEX dotted_name
        ON (cluster_index_clause | table_index_clause | bitmap_join_index_clause)
        UNUSABLE?
        ';'
@@ -694,7 +694,7 @@ indextype
 
 //https://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_1010.htm#SQLRF00805
 alter_index
-    : ALTER INDEX index_name (alter_index_ops_set1 | alter_index_ops_set2) ';'
+    : ALTER INDEX dotted_name (alter_index_ops_set1 | alter_index_ops_set2) ';'
     ;
 
 alter_index_ops_set1
@@ -832,12 +832,12 @@ new_partition_name
     ;
 
 new_index_name
-    : index_name
+    : dotted_name
     ;
 
 create_user
     : CREATE USER
-      user_object_name
+      id_expression
         ( identified_by
           | identified_other_clause
           | user_tablespace_clause
@@ -854,7 +854,7 @@ create_user
 // The proxy clause allows multiple users for a proxy designation.
 alter_user
     : ALTER USER
-      user_object_name
+      id_expression
         ( alter_identified_by
         | identified_other_clause
         | user_tablespace_clause
@@ -868,7 +868,7 @@ alter_user
         | container_data_clause
         )+
       ';'
-      | (','? user_object_name)+ proxy_clause ';'
+      | (','? id_expression)+ proxy_clause ';'
     ;
 
 alter_identified_by
@@ -921,10 +921,10 @@ alter_user_editions_clause
     ;
 
 proxy_clause
-    : REVOKE CONNECT THROUGH (ENTERPRISE USERS | user_object_name)
+    : REVOKE CONNECT THROUGH (ENTERPRISE USERS | id_expression)
     | GRANT CONNECT THROUGH
         ( ENTERPRISE USERS
-        | user_object_name
+        | id_expression
             (WITH (NO ROLES | ROLE role_clause))?
             (AUTHENTICATION REQUIRED)?
             (AUTHENTICATED USING (PASSWORD | CERTIFICATE | DISTINGUISHED NAME))?
@@ -945,12 +945,12 @@ add_rem_container_data
 
 container_data_clause
     : set_container_data
-    | add_rem_container_data (FOR container_tableview_name)?
+    | add_rem_container_data (FOR dotted_name)?
     ;
 
 // https://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_4005.htm#SQLRF01105
 analyze
-    : ( ANALYZE (TABLE tableview_name | INDEX index_name) partition_extention_clause?
+    : ( ANALYZE (TABLE tableview_name | INDEX dotted_name) partition_extention_clause?
       | ANALYZE CLUSTER cluster_name
       )
 
@@ -1011,10 +1011,10 @@ column_association
     ;
 
 function_association
-    : ( FUNCTIONS (','? function_name)+
-      | PACKAGES (','? package_name)+
-      | TYPES (','? type_name)+
-      | INDEXES (','? index_name)+
+    : ( FUNCTIONS (','? dotted_name)+
+      | PACKAGES (','? identifier)+
+      | TYPES (','? dotted_id_expression)+
+      | INDEXES (','? dotted_name)+
       | INDEXTYPES (','? indextype_name)+
       )
 
@@ -1071,7 +1071,7 @@ unified_auditing
       AUDIT (POLICY policy_name ((BY | EXCEPT) (','? audit_user)+ )?
                                 (WHENEVER NOT? SUCCESSFUL)?
             | CONTEXT NAMESPACE oracle_namespace
-                      ATTRIBUTES (','? attribute_name)+ (BY (','? audit_user)+)?
+                      ATTRIBUTES (','? identifier)+ (BY (','? audit_user)+)?
             )
       ';'
     ;
@@ -1205,7 +1205,7 @@ sql_statement_shortcut
     ;
 
 drop_index
-    : DROP INDEX index_name ';'
+    : DROP INDEX dotted_name ';'
     ;
 
 grant_statement
@@ -1216,7 +1216,7 @@ grant_statement
           | object_privilege paren_column_list?
           )
         )+
-      (ON grant_object_name)?
+      (ON id_expression)?
       TO (','? grantee_name | PUBLIC)+
       (WITH (ADMIN | DELEGATE) OPTION)?
       (WITH HIERARCHY OPTION)?
@@ -1261,7 +1261,7 @@ library_debug
 
 
 compiler_parameters_clause
-    : parameter_name EQUALS_OP parameter_value
+    : identifier EQUALS_OP parameter_value
     ;
 
 parameter_value
@@ -1310,7 +1310,7 @@ view_alias_constraint
     ;
 
 object_view_clause
-    : OF type_name
+    : OF dotted_id_expression
        ( WITH OBJECT (IDENTIFIER|ID|OID) ( DEFAULT | '(' (','? REGULAR_ID)+ ')' )
        | UNDER tableview_name
        )
@@ -1667,7 +1667,7 @@ mv_log_purge_clause
 
 create_materialized_view
     : CREATE MATERIALIZED VIEW tableview_name
-      (OF type_name )?
+      (OF dotted_id_expression )?
 //scoped_table_ref and column alias goes here  TODO
         ( ON PREBUILT TABLE ( (WITH | WITHOUT) REDUCED PRECISION)?
         | physical_properties?  (CACHE | NOCACHE)? parallel_clause? build_clause?
@@ -1699,7 +1699,7 @@ create_mv_refresh
     ;
 
 create_context
-    : CREATE (OR REPLACE)? CONTEXT oracle_namespace USING (schema_object_name '.')? package_name
+    : CREATE (OR REPLACE)? CONTEXT oracle_namespace USING (id_expression '.')? identifier
            (INITIALIZED (EXTERNALLY | GLOBALLY)
            | ACCESSED GLOBALLY
            )?
@@ -1763,7 +1763,7 @@ xmlschema_spec
     ;
 
 object_table
-    : OF type_name object_table_substitution?
+    : OF dotted_id_expression object_table_substitution?
       ('(' (','? object_properties)+ ')')?
       (ON COMMIT (DELETE | PRESERVE) ROWS)? oid_clause? oid_index_clause?
       physical_properties? column_properties? table_partitioning_clauses?
@@ -1773,7 +1773,7 @@ object_table
     ;
 
 oid_index_clause
-    : OIDINDEX index_name? '(' (physical_attributes_clause | TABLESPACE tablespace)+ ')'
+    : OIDINDEX dotted_name? '(' (physical_attributes_clause | TABLESPACE tablespace)+ ')'
     ;
 
 oid_clause
@@ -1781,7 +1781,7 @@ oid_clause
     ;
 
 object_properties
-    : (column_name | attribute_name) (DEFAULT expression)? ((','? inline_constraint)+ | inline_ref_constraint)?
+    : (column_name | identifier) (DEFAULT expression)? ((','? inline_constraint)+ | inline_ref_constraint)?
     | out_of_line_constraint
     | out_of_line_ref_constraint
     | supplemental_logging_props
@@ -2138,8 +2138,8 @@ allow_or_disallow
 
 create_synonym
     // Synonym's schema cannot be specified for public synonyms
-    : CREATE (OR REPLACE)? PUBLIC SYNONYM synonym_name FOR (schema_name PERIOD)? schema_object_name (AT_SIGN link_name)?
-    | CREATE (OR REPLACE)? SYNONYM (schema_name PERIOD)? synonym_name FOR (schema_name PERIOD)? schema_object_name (AT_SIGN link_name)?
+    : CREATE (OR REPLACE)? PUBLIC SYNONYM synonym_name FOR (identifier PERIOD)? id_expression (AT_SIGN identifier)?
+    | CREATE (OR REPLACE)? SYNONYM (identifier PERIOD)? synonym_name FOR (identifier PERIOD)? id_expression (AT_SIGN identifier)?
     ;
 
 comment_on_table
@@ -2531,7 +2531,7 @@ enable_disable_clause
     ;
 
 using_index_clause
-    : USING INDEX (index_name | '(' create_index ')' | index_attributes )?
+    : USING INDEX (dotted_name | '(' create_index ')' | index_attributes )?
     ;
 
 index_attributes
@@ -2758,7 +2758,7 @@ end_time_column
     ;
 
 column_definition
-    : column_name (datatype | type_name)
+    : column_name (datatype | dotted_id_expression)
          SORT?  (DEFAULT expression)? (ENCRYPT (USING  CHAR_STRING)? (IDENTIFIED BY regular_id)? CHAR_STRING? (NO? SALT)? )?  (inline_constraint* | inline_ref_constraint)
     ;
 
@@ -2787,7 +2787,7 @@ nested_item
     ;
 
 substitutable_column_clause
-    : ELEMENT? IS OF TYPE? '(' type_name ')'
+    : ELEMENT? IS OF TYPE? '(' dotted_id_expression ')'
     | NOT? SUBSTITUTABLE AT ALL LEVELS
     ;
 
@@ -2912,7 +2912,7 @@ c_parameters_clause
     ;
 
 parameter
-    : parameter_name (IN | OUT | INOUT | NOCOPY)* type_spec? default_value_part?
+    : identifier (IN | OUT | INOUT | NOCOPY)* type_spec? default_value_part?
     ;
 
 default_value_part
@@ -2950,11 +2950,11 @@ subtype_declaration
 // cursor_declaration incorportates curscursor_body and cursor_spec
 
 cursor_declaration
-    : CURSOR identifier ('(' (','? parameter_spec)+ ')' )? (RETURN type_spec)? (IS select_statement)? ';'
+    : CURSOR cursor_name ('(' (','? parameter_spec)+ ')' )? (RETURN type_spec)? (IS select_statement)? ';'
     ;
 
 parameter_spec
-    : parameter_name (IN? type_spec)? default_value_part?
+    : identifier (IN? type_spec)? default_value_part?
     ;
 
 exception_declaration
@@ -3012,9 +3012,7 @@ label_declaration
     ;
 
 statement
-    : body
-    | block
-    | assignment_statement
+    : assignment_statement
     | continue_statement
     | exit_statement
     | goto_statement
@@ -3025,7 +3023,9 @@ statement
     | raise_statement
     | return_statement
     | case_statement
-    | sql_statement
+    | sql_statement 
+    | body
+    | block
     | function_call
     | pipe_row_statement
     | procedure_call
@@ -3070,18 +3070,18 @@ loop_statement
 // Loop Specific Clause
 
 cursor_loop_param
-    : index_name IN REVERSE? lower_bound range_separator='..' upper_bound
+    : dotted_name IN REVERSE? lower_bound range_separator='..' upper_bound
     | record_name IN (cursor_name ('(' expressions? ')')? | '(' select_statement ')')
     ;
 
 forall_statement
-    : FORALL index_name IN bounds_clause sql_statement (SAVE EXCEPTIONS)?
+    : FORALL dotted_name IN bounds_clause sql_statement (SAVE EXCEPTIONS)?
     ;
 
 bounds_clause
     : lower_bound '..' upper_bound
-    | INDICES OF collection_name between_bound?
-    | VALUES OF index_name
+    | INDICES OF dotted_name between_bound?
+    | VALUES OF dotted_name
     ;
 
 between_bound
@@ -3205,7 +3205,7 @@ transaction_control_statements
 
 set_transaction_command
     : SET TRANSACTION
-      (READ (ONLY | WRITE) | ISOLATION LEVEL (SERIALIZABLE | READ COMMITTED) | USE ROLLBACK SEGMENT rollback_segment_name)?
+      (READ (ONLY | WRITE) | ISOLATION LEVEL (SERIALIZABLE | READ COMMITTED) | USE ROLLBACK SEGMENT identifier)?
       (NAME quoted_string)?
     ;
 
@@ -3224,11 +3224,11 @@ write_clause
     ;
 
 rollback_statement
-    : ROLLBACK WORK? (TO SAVEPOINT? savepoint_name | FORCE quoted_string)?
+    : ROLLBACK WORK? (TO SAVEPOINT? identifier | FORCE quoted_string)?
     ;
 
 savepoint_statement
-    : SAVEPOINT savepoint_name
+    : SAVEPOINT identifier
     ;
 
 // Dml
@@ -3268,7 +3268,7 @@ subquery_factoring_clause
     ;
 
 factoring_element
-    : query_name paren_column_list? AS '(' subquery order_by_clause? ')'
+    : identifier paren_column_list? AS '(' subquery order_by_clause? ')'
       search_clause? cycle_clause?
     ;
 
@@ -3452,11 +3452,11 @@ return_rows_clause
     ;
 
 reference_model
-    : REFERENCE reference_model_name ON '(' subquery ')' model_column_clauses cell_reference_options*
+    : REFERENCE identifier ON '(' subquery ')' model_column_clauses cell_reference_options*
     ;
 
 main_model
-    : (MAIN main_model_name)? model_column_clauses cell_reference_options* model_rules_clause
+    : (MAIN identifier)? model_column_clauses cell_reference_options* model_rules_clause
     ;
 
 model_column_clauses
@@ -3998,7 +3998,7 @@ within_or_over_part
     ;
 
 cost_matrix_clause
-    : COST (MODEL AUTO? | '(' (','? cost_class_name)+ ')' VALUES '(' expressions? ')')
+    : COST (MODEL AUTO? | '(' (','? identifier)+ ')' VALUES '(' expressions? ')')
     ;
 
 xml_passing_clause
@@ -4103,64 +4103,16 @@ xml_column_name
     | quoted_string
     ;
 
-cost_class_name
-    : identifier
-    ;
-
-attribute_name
-    : identifier
-    ;
-
-savepoint_name
-    : identifier
-    ;
-
-rollback_segment_name
-    : identifier
-    ;
-
-table_var_name
-    : identifier
-    ;
-
-schema_name
-    : identifier
-    ;
-
 routine_name
-    : identifier ('.' id_expression)* ('@' link_name)?
-    ;
-
-package_name
-    : identifier
+    : identifier ('.' id_expression)* ('@' identifier)?
     ;
 
 implementation_type_name
     : identifier ('.' id_expression)?
     ;
 
-parameter_name
-    : identifier
-    ;
-
-reference_model_name
-    : identifier
-    ;
-
-main_model_name
-    : identifier
-    ;
-
-container_tableview_name
-    : identifier ('.' id_expression)?
-    ;
-
 aggregate_function_name
     : identifier ('.' id_expression)*
-    ;
-
-query_name
-    : identifier
     ;
 
 grantee_name
@@ -4173,18 +4125,14 @@ role_name
     ;
 
 constraint_name
-    : identifier ('.' id_expression)* ('@' link_name)?
+    : identifier ('.' id_expression)* ('@' identifier)?
     ;
 
 label_name
     : id_expression
     ;
 
-type_name
-    : id_expression ('.' id_expression)*
-    ;
-
-sequence_name
+dotted_id_expression
     : id_expression ('.' id_expression)*
     ;
 
@@ -4192,25 +4140,13 @@ exception_name
     : identifier ('.' id_expression)*
     ;
 
-function_name
-    : identifier ('.' id_expression)?
-    ;
-
-procedure_name
-    : identifier ('.' id_expression)?
-    ;
-
-trigger_name
+dotted_name
     : identifier ('.' id_expression)?
     ;
 
 variable_name
-    : (INTRODUCER char_set_name)? id_expression ('.' id_expression)?
+    : (INTRODUCER dotted_id_expression)? id_expression ('.' id_expression)?
     | bind_variable
-    ;
-
-index_name
-    : identifier ('.' id_expression)?
     ;
 
 cursor_name
@@ -4223,21 +4159,13 @@ record_name
     | bind_variable
     ;
 
-collection_name
-    : identifier ('.' id_expression)?
-    ;
-
-link_name
-    : identifier
-    ;
-
 column_name
     : identifier ('.' id_expression)*
     ;
 
 tableview_name
     : identifier ('.' id_expression)?
-          ('@' link_name | /*TODO{!(input.LA(2) == BY)}?*/ partition_extension_clause)?
+          ('@' identifier | /*TODO{!(input.LA(2) == BY)}?*/ partition_extension_clause)?
     | xmltable outer_join_sign?
     ;
 
@@ -4245,37 +4173,18 @@ xmltable
     : XMLTABLE '(' (xml_namespaces_clause ',')? concatenation xml_passing_clause? (COLUMNS xml_table_column (',' xml_table_column)*)? ')' ('.' general_element_part)?
     ;
 
-char_set_name
-    : id_expression ('.' id_expression)*
-    ;
-
 synonym_name
     : identifier
     ;
 
-// Represents a valid DB object name in DDL commands which are valid for several DB (or schema) objects.
-// For instance, create synonym ... for <DB object name>, or rename <old DB object name> to <new DB object name>.
-// Both are valid for sequences, tables, views, etc.
-schema_object_name
-    : id_expression
-    ;
-
-dir_object_name
-    : id_expression
-    ;
-
-user_object_name
-    : id_expression
-    ;
-
 grant_object_name
     : tableview_name
-    | USER (','? user_object_name)+
-    | DIRECTORY dir_object_name
-    | EDITION schema_object_name
-    | MINING MODEL schema_object_name
-    | JAVA (SOURCE | RESOURCE) schema_object_name
-    | SQL TRANSLATION PROFILE schema_object_name
+    | USER (','? id_expression)+
+    | DIRECTORY id_expression
+    | EDITION id_expression
+    | MINING MODEL id_expression
+    | JAVA (SOURCE | RESOURCE) id_expression
+    | SQL TRANSLATION PROFILE id_expression
     ;
 
 column_list
@@ -4317,11 +4226,11 @@ argument
 
 type_spec
     : datatype
-    | REF? type_name (PERCENT_ROWTYPE | PERCENT_TYPE)?
+    | REF? dotted_id_expression (PERCENT_ROWTYPE | PERCENT_TYPE)?
     ;
 
 datatype
-    : native_datatype_element precision_part? (WITH LOCAL? TIME ZONE | CHARACTER SET char_set_name)?
+    : native_datatype_element precision_part? (WITH LOCAL? TIME ZONE | CHARACTER SET dotted_id_expression)?
     | INTERVAL (YEAR | DAY) ('(' expression ')')? TO (MONTH | SECOND) ('(' expression ')')?
     ;
 
@@ -4398,11 +4307,11 @@ general_element
     ;
 
 general_element_part
-    : (INTRODUCER char_set_name)? id_expression ('.' id_expression)* ('@' link_name)? function_argument?
+    : (INTRODUCER dotted_id_expression)? id_expression ('.' id_expression)* ('@' identifier)? function_argument?
     ;
 
 table_element
-    : (INTRODUCER char_set_name)? id_expression ('.' id_expression)*
+    : (INTRODUCER dotted_id_expression)? id_expression ('.' id_expression)*
     ;
 
 object_privilege
@@ -4565,7 +4474,7 @@ quoted_string
     ;
 
 identifier
-    : (INTRODUCER char_set_name)? id_expression
+    : (INTRODUCER dotted_id_expression)? id_expression
     ;
 
 id_expression
