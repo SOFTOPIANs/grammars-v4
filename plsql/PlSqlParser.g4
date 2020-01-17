@@ -3305,7 +3305,7 @@ select_list_elements
     ;
 
 table_ref_list
-    : (','? table_ref)+
+    : table_ref (',' table_ref)*
     ;
 
 // NOTE to PIVOT clause
@@ -3695,9 +3695,9 @@ cursor_expression
     ;
 
 logical_expression
-    : unary_logical_expression
+    : logical_expression OR logical_expression
     | logical_expression AND logical_expression
-    | logical_expression OR logical_expression
+    | unary_logical_expression
     ;
 
 unary_logical_expression
@@ -3746,11 +3746,11 @@ between_elements
     ;
 
 concatenation
-    : model_expression
-        (AT (LOCAL | TIME ZONE concatenation) | interval_expression)?
-    | concatenation op=(ASTERISK | SOLIDUS) concatenation
+    : concatenation op=(ASTERISK | SOLIDUS) concatenation
     | concatenation op=(PLUS_SIGN | MINUS_SIGN) concatenation
     | concatenation BAR BAR concatenation
+    | model_expression
+        (AT (LOCAL | TIME ZONE concatenation) | interval_expression)?
     ;
 
 interval_expression
