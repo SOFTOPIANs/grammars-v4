@@ -37,9 +37,8 @@ unit_statement
     : transaction_control_statements
     | alter_cluster
     | alter_database
-    | alter_function
+    | alter_function_or_procedure
     | alter_package
-    | alter_procedure
     | alter_sequence
     | alter_session
     | alter_trigger
@@ -79,9 +78,8 @@ unit_statement
     | create_type
     | create_synonym
 
-    | drop_function
+    | drop_function_or_procedure
     | drop_package
-    | drop_procedure
     | drop_sequence
     | drop_trigger
     | drop_type
@@ -101,18 +99,20 @@ unit_statement
 
 // DDL -> SQL Statements for Stored PL/SQL Units
 
+// Drop DDLs
+
+drop_function_or_procedure
+    : DROP (FUNCTION|PROCEDURE) dotted_name ';'
+    ;
+
+alter_function_or_procedure
+    : ALTER (FUNCTION|PROCEDURE) dotted_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
+    ;
+
 // Function DDLs
 
-drop_function
-    : DROP FUNCTION dotted_name ';'
-    ;
-
-alter_function
-    : ALTER FUNCTION dotted_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
-    ;
-
 create_function_body
-    : CREATE (OR REPLACE)? FUNCTION dotted_name ('(' (','? parameter)+ ')')?
+    : CREATE (OR REPLACE)? FUNCTION dotted_name ('('parameter (','? parameter)+ ')')?
       RETURN type_spec (invoker_rights_clause | parallel_enable_clause | result_cache_clause | DETERMINISTIC)*
       ((PIPELINED? (IS | AS) (DECLARE? seq_of_declare_specs? body | call_spec)) | (PIPELINED | AGGREGATE) USING implementation_type_name) ';'
     ;
@@ -192,14 +192,6 @@ package_obj_body
     ;
 
 // Procedure DDLs
-
-drop_procedure
-    : DROP PROCEDURE dotted_name ';'
-    ;
-
-alter_procedure
-    : ALTER PROCEDURE dotted_name COMPILE DEBUG? compiler_parameters_clause* (REUSE SETTINGS)? ';'
-    ;
 
 function_body
     : FUNCTION identifier ('(' parameter (',' parameter)* ')')?
