@@ -112,7 +112,7 @@ alter_function_or_procedure
 // Function DDLs
 
 create_function_body
-    : CREATE (OR REPLACE)? FUNCTION dotted_name ('('parameter (','? parameter)+ ')')?
+    : CREATE (OR REPLACE)? FUNCTION dotted_name ('('parameter (',' parameter)* ')')?
       RETURN type_spec (invoker_rights_clause | parallel_enable_clause | result_cache_clause | DETERMINISTIC)*
       ((PIPELINED? (IS | AS) (DECLARE? seq_of_declare_specs? body | call_spec)) | (PIPELINED | AGGREGATE) USING implementation_type_name) ';'
     ;
