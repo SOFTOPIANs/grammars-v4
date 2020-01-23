@@ -949,9 +949,10 @@ key_path_expression
 	;
 
 // GRAMMAR OF A POSTFIX EXPRESSION (inlined many rules from spec to avoid indirect left-recursion)
+// Both forced-value and optional-chaining operators are matched as an alternative with postfix operator
 
-postfix_expression:
-	primary_expression															# primary
+postfix_expression
+    : primary_expression														# primary
 	| postfix_expression postfix_operator										# postfix_operation
 	| postfix_expression function_call_argument_clause? closure_expression		# function_call_expression_with_closure
 	| postfix_expression function_call_argument_clause							# function_call_expression
@@ -966,9 +967,6 @@ postfix_expression:
 	| postfix_expression '.' 'self'					# postfix_self_expression
 	| dynamic_type_expression						# dynamic_type
 	| postfix_expression '[' expression_list ']'	# subscript_expression
-	// postfix_expression ('!' | '?')                # forced_value_expression
-	// ! is a postfix operator already | postfix_expression '!' # forced_value_expression ? is a postfix operator
-	// already | postfix_expression '?' # optional_chaining_expression
 	;
 
 // GRAMMAR OF A FUNCTION CALL EXPRESSION

@@ -167,7 +167,8 @@ public abstract class SwiftBaseParser : Parser {
             bitArray.Set(i, true);
         }
     }
-    private static bool _IsCharacterFromSet(IToken token, BitArray bitArray) {
+    private static bool _IsCharacterFromSet(IToken token, BitArray bitArray)
+    {
         if (token.Type == Eof) {
             return false;
         }
@@ -184,21 +185,31 @@ public abstract class SwiftBaseParser : Parser {
         return operatorCharacter.Get(codePoint);
     }
 
-    public static bool isOperatorHead(IToken token) {
+    public static bool isOperatorHead(IToken token)
+    {
         return _IsCharacterFromSet(token, operatorHead);
     }
 
-    public static bool isOperatorCharacter(IToken token) {
+    public static bool isOperatorCharacter(IToken token)
+    {
         return _IsCharacterFromSet(token, operatorCharacter);
     }
 
-    public static bool isOpNext(ITokenStream tokens) {
+    public static bool isOpNext(ITokenStream tokens)
+    {
+        /*
         int start = tokens.Index;
         IToken lt = tokens.Get(start);
         int stop = getLastOpTokenIndex(tokens);
-        if ( stop==-1 ) return false;
-        // System.out.printf("isOpNext: i=%d t='%s'", start, lt.getText());
-        // System.out.printf(", op='%s'\n", tokens.getText(Interval.of(start,stop)));
+        var isOpNext = lt.Text;
+        var op= tokens.GetText(Interval.Of(start,stop));
+        */
+
+        if (getLastOpTokenIndex(tokens) == -1)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -207,46 +218,37 @@ public abstract class SwiftBaseParser : Parser {
         int currentTokenIndex = tokens.Index; // current on-channel lookahead token index
         IToken currentToken = tokens.Get(currentTokenIndex);
 
-        //System.out.println("getLastOpTokenIndex: "+currentToken.getText());
-
-
         // operator → dot-operator-head­ dot-operator-characters
-        if (currentToken.Type == SwiftParser.DOT && tokens.Get(currentTokenIndex + 1).Type == SwiftParser.DOT) {
-            //System.out.println("DOT");
-
+        if (currentToken.Type == SwiftParser.DOT && tokens.Get(currentTokenIndex + 1).Type == SwiftParser.DOT)
+        {
             // dot-operator
             currentTokenIndex += 2; // point at token after ".."
             currentToken = tokens.Get(currentTokenIndex);
 
             // dot-operator-character → .­ | operator-character­
             while (currentToken.Type == SwiftParser.DOT || isOperatorCharacter(currentToken)) {
-                //System.out.println("DOT");
                 currentTokenIndex++;
                 currentToken = tokens.Get(currentTokenIndex);
             }
 
-            //System.out.println("result: "+(currentTokenIndex - 1));
             return currentTokenIndex - 1;
         }
 
         // operator → operator-head­ operator-characters­?
 
-        if (isOperatorHead(currentToken)) {
-            //System.out.println("isOperatorHead");
-
+        if (isOperatorHead(currentToken))
+        {
             tokens.GetText(); // TODO. This line strangely fixes crash at mvn test, however, mvn compile gives me perfect working binary.
             currentToken = tokens.Get(currentTokenIndex);
             while (isOperatorCharacter(currentToken)) {
-                //System.out.println("isOperatorCharacter");
                 currentTokenIndex++;
                 currentToken = tokens.Get(currentTokenIndex);
             }
-            //System.out.println("result: "+(currentTokenIndex - 1));
+
             return currentTokenIndex - 1;
-        } else {
-            //System.out.println("result: "+(-1));
-            return -1;
         }
+
+        return -1;
     }
 
     /**
@@ -266,10 +268,10 @@ public abstract class SwiftBaseParser : Parser {
         IToken nextToken = tokens.Get(stop+1);
         bool prevIsWS = isLeftOperatorWS(prevToken);
         bool nextIsWS = isRightOperatorWS(nextToken);
-        bool result = prevIsWS && nextIsWS || (!prevIsWS && !nextIsWS);
-        String text = tokens.GetText(Interval.Of(start, stop));
-        //System.out.println("isBinaryOp: '"+prevToken+"','"+text+"','"+nextToken+"' is "+result);
-        return result;
+
+        //var text = tokens.GetText(Interval.Of(start, stop));
+
+        return prevIsWS && nextIsWS || (!prevIsWS && !nextIsWS);
     }
 
     /**
@@ -279,17 +281,20 @@ public abstract class SwiftBaseParser : Parser {
     */
     public static bool isPrefixOp(ITokenStream tokens) {
         int stop = getLastOpTokenIndex(tokens);
-        if ( stop==-1 ) return false;
+        if (stop == -1)
+        {
+            return false;
+        }
 
         int start = tokens.Index;
         IToken prevToken = tokens.Get(start-1); // includes hidden-channel tokens
         IToken nextToken = tokens.Get(stop+1);
         bool prevIsWS = isLeftOperatorWS(prevToken);
         bool nextIsWS = isRightOperatorWS(nextToken);
-        bool result = prevIsWS && !nextIsWS;
-        String text = tokens.GetText(Interval.Of(start, stop));
-        // System.out.println("isPrefixOp: '"+prevToken+"','"+text+"','"+nextToken+"' is "+result);
-        return result;
+
+        // var text = tokens.GetText(Interval.Of(start, stop));
+
+        return prevIsWS && !nextIsWS;
     }
 
     /**
@@ -304,33 +309,34 @@ public abstract class SwiftBaseParser : Parser {
      */
     public static bool isPostfixOp(ITokenStream tokens) {
         int stop = getLastOpTokenIndex(tokens);
-        if ( stop==-1 ) return false;
+        if (stop == -1)
+        {
+            return false;
+        }
 
         int start = tokens.Index;
         IToken prevToken = tokens.Get(start-1); // includes hidden-channel tokens
         IToken nextToken = tokens.Get(stop+1);
         bool prevIsWS = isLeftOperatorWS(prevToken);
         bool nextIsWS = isRightOperatorWS(nextToken);
-        bool result =
-            !prevIsWS && nextIsWS ||
-            !prevIsWS && nextToken.Type==SwiftParser.DOT;
-        String text = tokens.GetText(Interval.Of(start, stop));
-        // System.out.println("isPostfixOp: '"+prevToken+"','"+text+"','"+nextToken+"' is "+result);
-        return result;
+
+        // var text = tokens.GetText(Interval.Of(start, stop));
+
+        return !prevIsWS && nextIsWS ||
+               !prevIsWS && (nextToken.Type==SwiftParser.DOT || 
+                             nextToken.Type==SwiftParser.TERMINATOR);
     }
 
     public static bool isOperator(ITokenStream tokens, String op) {
         int stop = getLastOpTokenIndex(tokens);
-        if ( stop==-1 ) return false;
+        if (stop == -1)
+        {
+            return false;
+        }
 
         int start = tokens.Index;
         String text = tokens.GetText(Interval.Of(start, stop));
-        // System.out.println("text: '"+text+"', op: '"+op+"', text.equals(op): '"+text.equals(op)+"'");
-
-        for (int i = 0; i <= stop; i++) {
-            // System.out.println("token["+i+"] = '"+tokens.getText(Interval.of(i, i))+"'");
-        }
-
+ 
         return text.Equals(op);
     }
 
