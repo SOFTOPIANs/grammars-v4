@@ -654,14 +654,14 @@ on_list_partitioned_table
     ;
 
 on_hash_partitioned_table
-    : STORE IN '(' (','? tablespace)+ ')'
-    | '(' (','? PARTITION partition_name? (TABLESPACE tablespace)?
+    : STORE IN '(' (','? regular_id)+ ')'
+    | '(' (','? PARTITION partition_name? (TABLESPACE regular_id)?
                 key_compression? UNUSABLE?)+
       ')'
     ;
 
 on_comp_partitioned_table
-    : (STORE IN '(' (','? tablespace)+ ')' )?
+    : (STORE IN '(' (','? regular_id)+ ')' )?
         '(' (','? PARTITION partition_name?
             ((segment_attributes_clause | key_compression)+)?
             UNUSABLE index_subpartition_clause? )+
@@ -669,8 +669,8 @@ on_comp_partitioned_table
     ;
 
 index_subpartition_clause
-    : STORE IN '(' (','? tablespace)+ ')'
-    | '(' (','? SUBPARTITION subpartition_name? (TABLESPACE tablespace)?
+    : STORE IN '(' (','? regular_id)+ ')'
+    | '(' (','? SUBPARTITION subpartition_name? (TABLESPACE regular_id)?
         key_compression? UNUSABLE?)+
       ')'
     ;
@@ -730,7 +730,7 @@ rebuild_clause
               | NOREVERSE
               )?
               ( parallel_clause
-              | TABLESPACE tablespace
+              | TABLESPACE regular_id
               | PARAMETERS '(' odci_parameters ')'
 //TODO        | xmlindex_parameters_clause
               | ONLINE
@@ -754,13 +754,13 @@ alter_index_partitioning
 modify_index_default_attrs
     : MODIFY DEFAULT ATTRIBUTES (FOR PARTITION partition_name)?
          ( physical_attributes_clause
-         | TABLESPACE (tablespace | DEFAULT)
+         | TABLESPACE (regular_id | DEFAULT)
          | logging_clause
          )
     ;
 
 add_hash_index_partition
-    : ADD PARTITION partition_name? (TABLESPACE tablespace)?
+    : ADD PARTITION partition_name? (TABLESPACE regular_id)?
         key_compression? parallel_clause?
     ;
 
@@ -1210,9 +1210,7 @@ grant_statement
         )+
       (ON id_expression)?
       TO (','? grantee_name | PUBLIC)+
-      (WITH (ADMIN | DELEGATE) OPTION)?
-      (WITH HIERARCHY OPTION)?
-      (WITH GRANT OPTION)?
+      (WITH (ADMIN | DELEGATE | GRANT | HIERARCHY) OPTION)?
       container_clause? ';'
     ;
 
@@ -1354,7 +1352,7 @@ constraint_state
     ;
 
 alter_tablespace
-    : ALTER TABLESPACE tablespace
+    : ALTER TABLESPACE regular_id
        ( DEFAULT table_compression? storage_clause?
        | MINIMUM EXTENT size_clause
        | RESIZE size_clause
@@ -1407,7 +1405,7 @@ flashback_mode_clause
     ;
 
 new_tablespace_name
-    : tablespace
+    : regular_id
     ;
 
 create_tablespace
@@ -1707,7 +1705,7 @@ create_cluster
     : CREATE CLUSTER  cluster_name '(' (','? column_name datatype SORT?)+ ')'
           ( physical_attributes_clause
           | SIZE size_clause
-          | TABLESPACE tablespace
+          | TABLESPACE regular_id
           | INDEX
           | (SINGLE TABLE)? HASHKEYS UNSIGNED_INTEGER (HASH IS expression)?
           )*
@@ -1765,7 +1763,7 @@ object_table
     ;
 
 oid_index_clause
-    : OIDINDEX dotted_name? '(' (physical_attributes_clause | TABLESPACE tablespace)+ ')'
+    : OIDINDEX dotted_name? '(' (physical_attributes_clause | TABLESPACE regular_id)+ ')'
     ;
 
 oid_clause
@@ -1816,7 +1814,7 @@ table_partitioning_clauses
 
 range_partitions
     : PARTITION BY RANGE '(' (','? column_name)+ ')'
-        (INTERVAL '(' expression ')' (STORE IN '(' (','? tablespace)+ ')' )? )?
+        (INTERVAL '(' expression ')' (STORE IN '(' (','? regular_id)+ ')' )? )?
           '(' (','? PARTITION partition_name? range_values_clause table_partition_description)+ ')'
     ;
 
@@ -1836,9 +1834,9 @@ individual_hash_partitions
 
 hash_partitions_by_quantity
     : PARTITIONS hash_partition_quantity
-       (STORE IN '(' (','? tablespace)+ ')')?
+       (STORE IN '(' (','? regular_id)+ ')')?
          (table_compression | key_compression)?
-         (OVERFLOW STORE IN '(' (','? tablespace)+ ')' )?
+         (OVERFLOW STORE IN '(' (','? regular_id)+ ')' )?
     ;
 
 hash_partition_quantity
@@ -1847,7 +1845,7 @@ hash_partition_quantity
 
 composite_range_partitions
     : PARTITION BY RANGE '(' (','? column_name)+ ')'
-       (INTERVAL '(' expression ')' (STORE IN '(' (','? tablespace)+ ')' )? )?
+       (INTERVAL '(' expression ')' (STORE IN '(' (','? regular_id)+ ')' )? )?
        (subpartition_by_range | subpartition_by_list | subpartition_by_hash)
          '(' (','? range_partition_desc)+ ')'
     ;
@@ -1928,7 +1926,7 @@ subpartition_by_list
 
 subpartition_by_hash
     : SUBPARTITION BY HASH '(' (','? column_name)+ ')'
-       (SUBPARTITIONS UNSIGNED_INTEGER (STORE IN '(' (','? tablespace)+ ')' )?
+       (SUBPARTITIONS UNSIGNED_INTEGER (STORE IN '(' (','? regular_id)+ ')' )?
        | subpartition_template
        )?
     ;
@@ -1950,7 +1948,7 @@ individual_hash_subparts
     ;
 
 hash_subparts_by_quantity
-    : SUBPARTITIONS UNSIGNED_INTEGER (STORE IN '(' (','? tablespace)+ ')' )?
+    : SUBPARTITIONS UNSIGNED_INTEGER (STORE IN '(' (','? regular_id)+ ')' )?
     ;
 
 range_values_clause
@@ -1969,8 +1967,8 @@ table_partition_description
     ;
 
 partitioning_storage_clause
-    : ( TABLESPACE tablespace
-      | OVERFLOW (TABLESPACE tablespace)?
+    : ( TABLESPACE regular_id
+      | OVERFLOW (TABLESPACE regular_id)?
       | table_compression
       | key_compression
       | lob_partitioning_storage
@@ -1981,8 +1979,8 @@ partitioning_storage_clause
 lob_partitioning_storage
     : LOB '(' lob_item ')'
        STORE AS (BASICFILE | SECUREFILE)?
-               (lob_segname ('(' TABLESPACE tablespace ')' )?
-               | '(' TABLESPACE tablespace ')'
+               (lob_segname ('(' TABLESPACE regular_id ')' )?
+               | '(' TABLESPACE regular_id ')'
                )
     ;
 
@@ -2220,14 +2218,14 @@ full_database_recovery
     ;
 
 partial_database_recovery
-    : TABLESPACE (','? tablespace)+
+    : TABLESPACE (','? regular_id)+
     | DATAFILE (','? CHAR_STRING | filenumber)+
     | partial_database_recovery_10g
     ;
 
 partial_database_recovery_10g
     : {isVersion10()}? STANDBY
-      ( TABLESPACE (','? tablespace)+
+      ( TABLESPACE (','? regular_id)+
       | DATAFILE (','? CHAR_STRING | filenumber)+
       )
       UNTIL (CONSISTENT WITH)? CONTROLFILE
@@ -2410,8 +2408,8 @@ convert_database_clause
 default_settings_clause
     : DEFAULT EDITION EQUALS_OP edition_name
     | SET DEFAULT (BIGFILE | SMALLFILE) TABLESPACE
-    | DEFAULT TABLESPACE tablespace
-    | DEFAULT TEMPORARY TABLESPACE (tablespace | tablespace_group_name)
+    | DEFAULT TABLESPACE regular_id
+    | DEFAULT TEMPORARY TABLESPACE (regular_id | tablespace_group_name)
     | RENAME GLOBAL_NAME TO database ('.' domain)+
     | ENABLE BLOCK CHANGE TRACKING (USING FILE filename REUSE?)?
     | DISABLE BLOCK CHANGE TRACKING
@@ -2529,7 +2527,7 @@ using_index_clause
 index_attributes
     : ( physical_attributes_clause
       | logging_clause
-      | TABLESPACE (tablespace | DEFAULT)
+      | TABLESPACE (regular_id | DEFAULT)
       | key_compression
       | sort_or_nosort
       | REVERSE
@@ -2659,7 +2657,7 @@ lob_item
     ;
 
 lob_storage_parameters
-    :  TABLESPACE tablespace | (lob_parameters storage_clause? )
+    :  TABLESPACE regular_id | (lob_parameters storage_clause? )
     |  storage_clause
     ;
 
@@ -2721,9 +2719,6 @@ lob_retention_clause
 encryption_spec
     : (USING  CHAR_STRING)? (IDENTIFIED BY REGULAR_ID)? CHAR_STRING? (NO? SALT)?
     ;
-tablespace
-    : regular_id
-    ;
 
 varray_item
     : (id_expression '.')? (id_expression '.')? id_expression
@@ -2764,7 +2759,7 @@ out_of_line_part_storage
     ;
 
 nested_table_col_properties
-    : NESTED TABLE  (nested_item | COLUMN_VALUE) substitutable_column_clause? (LOCAL | GLOBAL)?
+    : NESTED TABLE  regular_id substitutable_column_clause? (LOCAL | GLOBAL)?
        STORE AS tableview_name ( '(' ( '(' object_properties ')'
                                      | physical_properties
                                      | column_properties
@@ -2773,10 +2768,6 @@ nested_table_col_properties
                                )?
         (RETURN AS? (LOCATOR | VALUE) )?
      ;
-
-nested_item
-    : regular_id
-    ;
 
 substitutable_column_clause
     : ELEMENT? IS OF TYPE? '(' dotted_id_expression ')'
@@ -4052,6 +4043,7 @@ sql_plus_command
     | START_CMD
     | whenever_command
     | set_command
+    | title_command
     ;
 
 whenever_command
@@ -4062,6 +4054,10 @@ whenever_command
 
 set_command
     : SET regular_id (CHAR_STRING | ON | OFF | /*EXACT_NUM_LIT*/numeric | regular_id)
+    ;
+
+title_command
+    : (BTITLE | TTITLE) ( ON | OFF |(regular_id|CHAR_STRING)+)
     ;
 
 // Common
@@ -4479,9 +4475,9 @@ outer_join_sign
     ;
 
 regular_id
-    : non_reserved_keywords_pre12c
+    : REGULAR_ID
+    | non_reserved_keywords_pre12c
     | non_reserved_keywords_in_12c
-    | REGULAR_ID
     | A_LETTER
     | AGENT
     | AGGREGATE
@@ -4547,7 +4543,8 @@ regular_id
     ;
 
 non_reserved_keywords_in_12c
-    : CONTAINER_DATA
+    : BTITLE
+    | CONTAINER_DATA
     | DELEGATE
     | EDITIONABLE
     | FAILURE
@@ -4562,6 +4559,7 @@ non_reserved_keywords_in_12c
     | SYSGUID
     | SYSKM
     | TIES
+    | TTITLE
     | TRANSLATION
     ;
 
