@@ -4504,6 +4504,7 @@ regular_id
     | EXCEPTION_INIT
     | EXCEPTIONS
     | EXIT
+    | EXISTS
     | FLOAT
     | FORALL
     | INDICES
@@ -5002,6 +5003,7 @@ non_reserved_keywords_pre12c
     | SYSOPER
     | SYSTEM
     | TABLE
+    | TABLES
     | TEMPFILE
     | TEMPLATE
     | TEMPORARY
@@ -5012,6 +5014,7 @@ non_reserved_keywords_pre12c
     | THREAD
     | THROUGH
     | TIME
+    | TIMEZONE
     | TRACE
     | TRACKING
     | TRAILING
