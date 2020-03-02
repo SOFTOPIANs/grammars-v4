@@ -4299,7 +4299,7 @@ general_element
     ;
 
 general_element_part
-    : (INTRODUCER dotted_id_expression)? id_expression ('.' id_expression)* ('@' identifier)? function_argument?
+    : (INTRODUCER dotted_id_expression)? id_expression ('.' id_expression)* ('@' identifier)? (function_argument)*
     ;
 
 table_element
@@ -4528,6 +4528,7 @@ regular_id
     | RENAME
     | RESTRICT_REFERENCES
     | RESULT
+    | ROWID
     | SELF
     | SERIALLY_REUSABLE
     | SET
