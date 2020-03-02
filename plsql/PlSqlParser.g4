@@ -176,7 +176,7 @@ procedure_spec
 
 function_spec
     : FUNCTION identifier ('(' parameter ( ',' parameter)* ')')?
-      RETURN type_spec (DETERMINISTIC)? (RESULT_CACHE)? ';'
+      RETURN type_spec (DETERMINISTIC)? (RESULT_CACHE)? (IS external_library_function_annotation)? ';'
     ;
 
 package_obj_body
@@ -489,7 +489,11 @@ type_procedure_spec
 
 type_function_spec
     : FUNCTION dotted_name ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
-      RETURN (type_spec | SELF AS RESULT) ((IS | AS) call_spec | EXTERNAL VARIABLE? NAME expression)?
+      RETURN (type_spec | SELF AS RESULT) ((IS | AS) call_spec | EXTERNAL VARIABLE? NAME expression | external_library_function_annotation)?
+    ;
+
+external_library_function_annotation
+    : EXTERNAL LIBRARY id_expression NAME (quoted_string | identifier) LANGUAGE id_expression PARAMETERS ('(' type_elements_parameter (',' type_elements_parameter)* ')')?
     ;
 
 constructor_spec
