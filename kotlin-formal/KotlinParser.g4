@@ -157,7 +157,7 @@ functionValueParameter
 
 functionDeclaration
     : modifiers?
-    FUN (NL* typeParameters)? (NL* receiverType NL* DOT)? NL* simpleIdentifier
+    FUN (NL* typeParameters)? NL* (receiverType | simpleIdentifier)
     NL* functionValueParameters
     (NL* COLON NL* type)?
     (NL* typeConstraints)?
