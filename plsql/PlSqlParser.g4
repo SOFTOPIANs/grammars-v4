@@ -161,13 +161,13 @@ create_package_body
 
 package_obj_spec
     : pragma_declaration
-    | variable_declaration
     | subtype_declaration
     | cursor_declaration
-    | exception_declaration
     | type_declaration
     | procedure_spec
     | function_spec
+    | variable_declaration
+    | exception_declaration
     ;
 
 procedure_spec
@@ -180,15 +180,15 @@ function_spec
     ;
 
 package_obj_body
-    : variable_declaration
-    | subtype_declaration
+    : subtype_declaration
     | cursor_declaration
-    | exception_declaration
     | type_declaration
     | procedure_body
     | function_body
     | procedure_spec
     | function_spec
+    | variable_declaration
+    | exception_declaration
     ;
 
 // Procedure DDLs
@@ -196,7 +196,7 @@ package_obj_body
 function_body
     : FUNCTION identifier ('(' parameter (',' parameter)* ')')?
       RETURN type_spec (invoker_rights_clause | parallel_enable_clause | result_cache_clause | DETERMINISTIC)*
-      ((PIPELINED? (IS | AS) (DECLARE? seq_of_declare_specs? body | call_spec)) | (PIPELINED | AGGREGATE) USING implementation_type_name) ';'
+      ((PIPELINED? (IS | AS) (DECLARE? seq_of_declare_specs? body | call_spec)) | ((PIPELINED | AGGREGATE) USING implementation_type_name)) ';'
     ;
 
 procedure_body
@@ -3839,7 +3839,7 @@ string_function
     | DECODE '(' expressions  ')'
     | CHR '(' concatenation USING NCHAR_CS ')'
     | NVL '(' expression ',' expression ')'
-    | TRIM '(' ((LEADING | TRAILING | BOTH)? quoted_string? FROM)? concatenation ')'
+    | TRIM '(' ((LEADING | TRAILING | BOTH)? concatenation? FROM)? concatenation ')'
     | TO_DATE '(' expression (',' quoted_string)? ')'
     ;
 
@@ -4217,8 +4217,8 @@ argument
     ;
 
 type_spec
-    : datatype
-    | REF? dotted_id_expression (PERCENT_ROWTYPE | PERCENT_TYPE)?
+    : REF? dotted_id_expression (PERCENT_ROWTYPE | PERCENT_TYPE)?
+    | datatype
     ;
 
 datatype
@@ -5023,6 +5023,7 @@ non_reserved_keywords_pre12c
     | TRUSTED
     | TUNING
     | TYPE
+    | TYPES
     | UNARCHIVED
     | UNBOUNDED
     | UNDER
