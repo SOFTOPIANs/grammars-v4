@@ -2914,15 +2914,15 @@ seq_of_declare_specs
 
 declare_spec
     : pragma_declaration
-    | variable_declaration
     | subtype_declaration
     | cursor_declaration
-    | exception_declaration
     | type_declaration
     | procedure_spec
     | function_spec
     | procedure_body
     | function_body
+    | variable_declaration
+    | exception_declaration
     ;
 
 // incorporates constant_declaration
@@ -3835,12 +3835,12 @@ quantified_expression
 string_function
     : SUBSTR '(' expression ',' expression (',' expression)? ')'
     | TO_CHAR '(' (table_element | standard_function | expression)
-                  (',' quoted_string)? (',' quoted_string)? ')'
+                  (',' concatenation)? (',' concatenation)? ')'
     | DECODE '(' expressions  ')'
     | CHR '(' concatenation USING NCHAR_CS ')'
     | NVL '(' expression ',' expression ')'
     | TRIM '(' ((LEADING | TRAILING | BOTH)? concatenation? FROM)? concatenation ')'
-    | TO_DATE '(' expression (',' quoted_string)? ')'
+    | TO_DATE '(' expression (',' concatenation)? ')'
     ;
 
 standard_function
@@ -4910,6 +4910,7 @@ non_reserved_keywords_pre12c
     | RECYCLE
     | REDACTION
     | REDUCED
+    | REFERENCE
     | REFERENCES
     | REFERENCING
     | REF
