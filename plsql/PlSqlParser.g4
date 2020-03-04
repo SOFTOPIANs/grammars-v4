@@ -3016,6 +3016,7 @@ statement
     | function_call
     | pipe_row_statement
     | procedure_call
+    | expression
     ;
 
 swallow_to_semi
@@ -3786,6 +3787,7 @@ unary_expression
     |  /*TODO{(input.LA(1) == CASE || input.LA(2) == CASE)}?*/ case_statement/*[false]*/
     |  quantified_expression
     |  standard_function
+    |  SPOOL (STDIN | STDOUT | STDERR)? (OFF | (ON TO)? expression )
     |  atom
     ;
 
@@ -4538,6 +4540,10 @@ regular_id
     | SIGNTYPE
     | SIMPLE_INTEGER
     | SMALLINT
+    | SPOOL
+    | STDIN
+    | STDOUT
+    | STDERR
     | SUBTYPE
     | TRIGGER
     | VARCHAR
