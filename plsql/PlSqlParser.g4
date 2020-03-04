@@ -3787,7 +3787,7 @@ unary_expression
     |  /*TODO{(input.LA(1) == CASE || input.LA(2) == CASE)}?*/ case_statement/*[false]*/
     |  quantified_expression
     |  standard_function
-    |  SPOOL (STDIN | STDOUT | STDERR)? (OFF | (ON TO)? expression )
+    |  SPOOL (STDIN | STDOUT | STDERR)? (OFF | ((ON TO)? expression))
     |  atom
     ;
 
@@ -4049,6 +4049,7 @@ sql_plus_command
     | PROMPT_MESSAGE
     | SHOW (ERR | ERRORS)
     | START_CMD
+    | SPOOL (STDIN | STDOUT | STDERR)? (OFF | ((ON TO)? expression))
     | whenever_command
     | set_command
     | title_command
