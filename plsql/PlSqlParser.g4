@@ -3571,7 +3571,7 @@ insert_into_clause
     ;
 
 values_clause
-    : VALUES '(' expressions? ')'
+    : VALUES (expression | '(' expressions? ')')
     ;
 
 merge_statement
@@ -3743,6 +3743,7 @@ between_elements
 concatenation
     : concatenation op=(ASTERISK | SOLIDUS) concatenation
     | concatenation op=(PLUS_SIGN | MINUS_SIGN) concatenation
+    | concatenation op=MOD concatenation
     | concatenation BAR BAR concatenation
     | model_expression
         (AT (LOCAL | TIME ZONE concatenation) | interval_expression)?
@@ -3868,6 +3869,7 @@ numeric_function
    | MAX '(' (DISTINCT | ALL)? expression ')'
    | LEAST '(' expressions ')'
    | GREATEST '(' expressions ')'
+   | MOD '(' expression ',' expression ')'
    ;
 
 other_function
@@ -4513,6 +4515,7 @@ regular_id
     | LANGUAGE
     | LONG
     | LOOP
+    | MOD
     | NUMBER
     | OSERROR
     | OUT

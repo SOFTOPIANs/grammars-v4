@@ -405,6 +405,7 @@ MINUS:                        'MINUS';
 MINUTE:                       'MINUTE';
 MINVALUE:                     'MINVALUE';
 MLSLABEL:                     'MLSLABEL';
+MOD:                          'MOD';
 MODEL:                        'MODEL';
 MODE:                         'MODE';
 MODIFY:                       'MODIFY';
